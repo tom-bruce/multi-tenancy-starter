@@ -3,6 +3,8 @@ const nanoid = customAlphabet("123456789ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijkmnop
 const RESOURCES = {
   session: "sess",
   user: "user",
+  organisation: "org",
+  member: "mem",
 };
 
 type Resource = keyof typeof RESOURCES;

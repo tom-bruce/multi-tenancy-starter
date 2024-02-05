@@ -14,9 +14,7 @@ import { assertNever } from "@/lib/utils";
 
 export const userRouter = router({
   me: publicProcedure.query(async (opts) => {
-    return {
-      user: opts.ctx.user,
-    };
+    return { user: opts.ctx.user ?? null };
   }),
   signUp: publicProcedure.input(signUpSchema).mutation(async ({ input, ctx }) => {
     if (ctx.user) {

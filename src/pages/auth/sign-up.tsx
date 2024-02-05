@@ -1,9 +1,17 @@
+import { useUser } from "@/features/auth/authenticated-user-provider";
 import { signUpSchema } from "@/features/auth/schemas";
 import { trpc } from "@/lib/trpc/next-client";
 import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 function SignUpForm() {
   const router = useRouter();
+  const { user } = useUser();
+  useEffect(() => {
+    if (user) {
+      router.push("/");
+    }
+  }, [user, router]);
   const signUpMutation = trpc.user.signUp.useMutation({
     onSuccess: () => {
       router.push("/");

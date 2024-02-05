@@ -14,3 +14,10 @@ export function parseFormData<S extends z.ZodObject<any>>(
 export function assertNever(value: never): never {
   throw new Error(`Unexpected value: ${value}`);
 }
+
+export function sluggify(input: string): string {
+  return input
+    .toLowerCase()
+    .replace(/ /g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}

@@ -1,3 +1,4 @@
+import { useUser } from "@/features/auth/authenticated-user-provider";
 import { signUpSchema } from "@/features/auth/schemas";
 import { trpc } from "@/lib/trpc/next-client";
 import { useRouter } from "next/router";
@@ -28,15 +29,12 @@ function SignInForm() {
 }
 export default function SignUpPage() {
   const router = useRouter();
-  const meQuery = trpc.user.me.useQuery();
+  const { user } = useUser();
   useEffect(() => {
-    if (meQuery.data?.user) {
+    if (user) {
       router.push("/");
     }
-  }, [meQuery.data, router]);
-  if (meQuery.error || meQuery.isLoading) {
-    return null;
-  }
+  }, [user, router]);
   return (
     <main>
       <h1>Sign In</h1>
