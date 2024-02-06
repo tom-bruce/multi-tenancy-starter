@@ -3,7 +3,7 @@ TODO
 - [x] Handle server validation errors on client
 - [x] Styling
 - [x] Migrate to Postgres
-- [ ] Add created at time to orgs and memberships
+- [x] Add created at time to orgs and memberships
 - [ ] Verify org membership using trpc middleware
 - [ ] Verify org membership via client side provider
 - [ ] Setup email sending
