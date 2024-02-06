@@ -1,12 +1,12 @@
 import { eq } from "drizzle-orm";
 import { db } from "./db";
 import { users } from "./db/schema/users";
-import { TimeSpan, generateId } from "lucia";
+import { generateId } from "lucia";
 import { passwordResetTokens } from "./db/schema/password-reset-tokens";
-import { isWithinExpirationDate } from "oslo";
+import { createDate, TimeSpan, isWithinExpirationDate } from "oslo";
 import { result } from "./result";
 import { CodedError } from "./error";
-import { SqliteError } from "better-sqlite3";
+import { DatabaseError, NeonDbError } from "@neondatabase/serverless";
 export * as User from "./user";
 
 export async function create({ email, hashedPassword }: { email: string; hashedPassword: string }) {
@@ -20,8 +20,8 @@ export async function create({ email, hashedPassword }: { email: string; hashedP
     if (!newUser) throw new Error("Unknown Error");
     return result.success(newUser);
   } catch (e) {
-    if (e instanceof SqliteError) {
-      if (e.code === "SQLITE_CONSTRAINT_UNIQUE" && e.message.includes("email")) {
+    if (e instanceof NeonDbError) {
+      if (e.code === "23505" && e.message.includes("users_email_unique")) {
         return result.fail(new CodedError("UserAlreadyExists"));
       }
     }
@@ -43,7 +43,7 @@ export async function createResetPasswordToken(userId: string) {
   const token = generateId(40);
   await db
     .insert(passwordResetTokens)
-    .values({ id: token, userId, expiresAt: Date.now() + 60 * 5 * 1000 })
+    .values({ id: token, userId, expiresAt: createDate(new TimeSpan(5, "m")) })
     .execute();
   return token;
 }
@@ -72,7 +72,7 @@ export async function changePasswordWithResetToken({
   if (!dbToken) {
     return result.fail(new ChangePasswordError("TokenNotFound"));
   }
-  if (Date.now() >= dbToken.expiresAt) {
+  if (!isWithinExpirationDate(dbToken.expiresAt)) {
     return result.fail(new ChangePasswordError("TokenExpired"));
   }
 

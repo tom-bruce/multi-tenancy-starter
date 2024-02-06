@@ -1,17 +1,19 @@
-import { sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { timestamp } from "drizzle-orm/pg-core";
 import { organisations } from "./organisations";
 import { users } from "./users";
 import { generateId } from "@/lib/id";
+import { pgTable, varchar } from "drizzle-orm/pg-core";
 
-export const members = sqliteTable("members", {
-  id: text("id")
-    .notNull()
+export const members = pgTable("members", {
+  id: varchar("id")
     .primaryKey()
+    .notNull()
     .$defaultFn(() => generateId("member")),
-  userId: text("user_id")
+  userId: varchar("user_id")
     .notNull()
     .references(() => users.id),
-  organisationId: text("organisation_id")
+  organisationId: varchar("organisation_id")
     .notNull()
     .references(() => organisations.id),
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull().defaultNow(),
 });

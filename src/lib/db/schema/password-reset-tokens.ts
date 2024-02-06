@@ -1,10 +1,11 @@
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { users } from "./users";
+import { pgTable, varchar } from "drizzle-orm/pg-core";
+import { timestamp } from "drizzle-orm/pg-core";
 
-export const passwordResetTokens = sqliteTable("password_reset_tokens", {
-  id: text("id").notNull().primaryKey(),
-  userId: text("user_id")
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: varchar("id").notNull().primaryKey(),
+  userId: varchar("user_id")
     .notNull()
     .references(() => users.id),
-  expiresAt: integer("expires_at").notNull(),
+  expiresAt: timestamp("expires_at", { mode: "date", withTimezone: true }).notNull(),
 });

@@ -1,11 +1,11 @@
 import { generateId } from "@/lib/id";
-import { sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { users } from "./users";
+import { pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
 
-export const organisations = sqliteTable("organisations", {
-  id: text("id")
+export const organisations = pgTable("organisations", {
+  id: varchar("id")
     .primaryKey()
     .$defaultFn(() => generateId("organisation")),
-  name: text("name").notNull().unique(),
-  slug: text("slug").notNull().unique(),
+  name: varchar("name").notNull().unique(),
+  slug: varchar("slug").notNull().unique(),
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull().defaultNow(),
 });

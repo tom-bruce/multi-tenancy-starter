@@ -1,6 +1,6 @@
-import { BetterSQLite3Database, drizzle } from "drizzle-orm/better-sqlite3";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import Database from "better-sqlite3";
+import { migrate } from "drizzle-orm/neon-http/migrator";
+import { drizzle, NeonHttpDatabase } from "drizzle-orm/neon-http";
+import { neon } from "@neondatabase/serverless";
 import "dotenv/config";
 
 const runMigrate = async () => {
@@ -8,8 +8,9 @@ const runMigrate = async () => {
     throw new Error("DATABASE_URL is not defined");
   }
 
-  const sqlite = new Database("sqlite.db");
-  const db: BetterSQLite3Database = drizzle(sqlite);
+  const sql = neon(process.env.DATABASE_URL);
+  console.log(process.env.DATABASE_URL);
+  const db: NeonHttpDatabase = drizzle(sql);
 
   console.log("⏳ Running migrations...");
 

@@ -1,12 +1,12 @@
 import { Lucia } from "lucia";
-import { DrizzleSQLiteAdapter } from "@lucia-auth/adapter-drizzle";
+import { DrizzlePostgreSQLAdapter } from "@lucia-auth/adapter-drizzle";
 import { sessions } from "@/lib/db/schema/sessions";
 import type { Session as DbSession } from "@/lib/db/schema/sessions";
 import { users } from "@/lib/db/schema/users";
 import type { User as DbUser } from "@/lib/db/schema/users";
 import { db } from "@/lib/db";
 
-const adapter = new DrizzleSQLiteAdapter(db, sessions, users);
+const adapter = new DrizzlePostgreSQLAdapter(db, sessions, users);
 
 export const lucia = new Lucia(adapter, {
   getUserAttributes(databaseUserAttributes) {

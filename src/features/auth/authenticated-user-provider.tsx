@@ -20,9 +20,15 @@ const authContext = createContext<AuthenticationContext>({} as AuthenticationCon
 
 export const AuthenticatedProvider = ({ children }: { children: ReactNode }) => {
   const auth = useUser();
+  const router = useRouter();
+  useEffect(() => {
+    if (auth.user === null) {
+      router.push(SIGN_IN_URL);
+    }
+  }, [auth.user, router]);
   if (auth.user === null) {
     // TODO this should probably show either an error screen or redirect to login. The purpose of this provider is to allow for the more strictly typed useAuthenticatedUser hook
-    throw new Error("User is null");
+    return null;
   }
   return (
     <authenticatedAuthContext.Provider value={{ user: auth.user }}>
