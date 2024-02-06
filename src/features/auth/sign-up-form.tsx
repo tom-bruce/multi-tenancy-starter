@@ -1,4 +1,7 @@
-import { Button } from "@/components/ui/button";
+import { trpc } from "@/lib/trpc/next-client";
+import { useRouter } from "next/router";
+import { signUpSchema } from "./schemas";
+import { useZodForm } from "@/components/ui/use-zod-form";
 import {
   Form,
   FormControl,
@@ -9,35 +12,34 @@ import {
   FormRootMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useZodForm } from "@/components/ui/use-zod-form";
-import { trpc } from "@/lib/trpc/next-client";
-import { useRouter } from "next/router";
-import { signUpSchema } from "./schemas";
+import { Button } from "@/components/ui/button";
+import { SIGN_UP_ERRORS } from "./config";
 import { useQueryClient } from "@tanstack/react-query";
-import { SIGN_IN_ERRORS } from "./config";
 
-export function SignInForm() {
+export function SignUpForm() {
   const router = useRouter();
+
   const qc = useQueryClient();
-  const signInMutation = trpc.user.signIn.useMutation({
+  const signUpMutation = trpc.user.signUp.useMutation({
     onSuccess: () => {
       qc.removeQueries();
       router.push("/");
     },
     onError: (error) => {
-      if (error.message === SIGN_IN_ERRORS.INVALID_CREDENTIALS) {
-        form.setError("root", { message: SIGN_IN_ERRORS.INVALID_CREDENTIALS });
-      } else if (error.message === SIGN_IN_ERRORS.USER_LINKED_WITH_ANOTHER_ACCOUNT) {
-        form.setError("root", { message: SIGN_IN_ERRORS.USER_LINKED_WITH_ANOTHER_ACCOUNT });
+      if (error.message === SIGN_UP_ERRORS.EMAIL_IN_USE) {
+        form.setError("email", { message: SIGN_UP_ERRORS.EMAIL_IN_USE });
       } else {
         form.setError("root", { message: "An unexpected error occurred. Please try again." });
       }
     },
   });
+
   const form = useZodForm(signUpSchema, { defaultValues: { email: "", password: "" } });
+
   const onSubmit = form.handleSubmit((data) => {
-    signInMutation.mutate(data);
+    signUpMutation.mutate(data);
   });
+
   return (
     <Form {...form}>
       <form className="max-w-2xl mx-auto space-y-4" onSubmit={onSubmit}>

@@ -1,6 +1,8 @@
 import { TriggerResetPasswordForm } from "@/features/auth/trigger-reset-password-form";
-import { SignOutButton } from "@/features/auth/sign-out-button-client";
+import { SignOutButton } from "@/features/auth/sign-out-button";
 import { useUser } from "@/features/auth/authenticated-user-provider";
+import Link from "next/link";
+import { SIGN_IN_URL } from "@/features/auth/config";
 
 function Profile() {
   const { user } = useUser();
@@ -8,7 +10,7 @@ function Profile() {
     <div>
       <h1>Profile</h1>
       <pre>{JSON.stringify(user, null, 2)}</pre>
-      {user ? <SignOutButton /> : null}
+      {user ? <SignOutButton /> : <Link href={SIGN_IN_URL}>Sign in</Link>}
     </div>
   );
 }

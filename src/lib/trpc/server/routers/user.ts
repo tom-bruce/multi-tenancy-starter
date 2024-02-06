@@ -10,7 +10,13 @@ import { User } from "@/lib/user";
 import { lucia } from "@/lib/auth";
 import { generateId } from "@/lib/id";
 import { TRPCError } from "@trpc/server";
-import { assertNever } from "@/lib/utils";
+import { assertNever, delay, getBaseUrl } from "@/lib/utils";
+import {
+  RESET_TOKEN_ERRORS,
+  SIGN_IN_ERRORS,
+  SIGN_UP_ERRORS,
+  VERIFY_RESET_TOKEN_URL,
+} from "@/features/auth/config";
 
 export const userRouter = router({
   me: publicProcedure.query(async (opts) => {
@@ -22,23 +28,37 @@ export const userRouter = router({
     }
     const hashedPassword = await Password.hash(input.password);
 
-    const user = await User.create({ email: input.email, hashedPassword });
+    const createResult = await User.create({ email: input.email, hashedPassword });
 
+    if (!createResult._ok) {
+      if (createResult.error.code === "UserAlreadyExists") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: SIGN_UP_ERRORS.EMAIL_IN_USE,
+        });
+      } else {
+        assertNever(createResult.error.code);
+      }
+    }
+    const user = createResult.value;
     //@ts-expect-error
     const session = await lucia.createSession(user.id, {}, { sessionId: generateId("session") });
     const sessionCookie = lucia.createSessionCookie(session.id);
     ctx.res.appendHeader("Set-Cookie", sessionCookie.serialize());
-    return { success: true };
+    return;
   }),
   signIn: publicProcedure.input(signInSchema).mutation(async ({ input, ctx }) => {
     const maybeUser = await User.byEmail(input.email);
 
     if (!maybeUser) {
-      throw new TRPCError({ code: "BAD_REQUEST", message: "User not found" });
+      throw new TRPCError({ code: "BAD_REQUEST", message: SIGN_IN_ERRORS.INVALID_CREDENTIALS });
     }
 
     if (!maybeUser.hashedPassword) {
-      throw new TRPCError({ code: "BAD_REQUEST", message: "User linked with another account" });
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: SIGN_IN_ERRORS.USER_LINKED_WITH_ANOTHER_ACCOUNT,
+      });
     }
 
     const isValidPassword = await Password.verify({
@@ -47,7 +67,7 @@ export const userRouter = router({
     });
 
     if (!isValidPassword) {
-      throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid password" });
+      throw new TRPCError({ code: "BAD_REQUEST", message: SIGN_IN_ERRORS.INVALID_CREDENTIALS });
     }
 
     const session = await lucia.createSession(
@@ -59,7 +79,6 @@ export const userRouter = router({
 
     const sessionCookie = lucia.createSessionCookie(session.id);
     ctx.res.appendHeader("Set-Cookie", sessionCookie.serialize());
-    console.log(sessionCookie);
     return;
   }),
   signOut: publicProcedure.mutation(async ({ ctx }) => {
@@ -73,7 +92,6 @@ export const userRouter = router({
   triggerResetPassword: publicProcedure
     .input(resetPasswordSchema)
     .mutation(async ({ ctx, input }) => {
-      // Check if the user exists
       const maybeUser = await User.byEmail(input.email);
       if (!maybeUser) {
         // Not ideal to expose this information, however it is inevitably exposed during the sign up process hence could be enumerated from there
@@ -85,7 +103,10 @@ export const userRouter = router({
 
       // Create a reset token
       const resetToken = await User.createResetPasswordToken(maybeUser.id);
-      console.log({ resetToken, maybeUser });
+      const baseUrl = getBaseUrl();
+      const resetUrl = new URL(VERIFY_RESET_TOKEN_URL, baseUrl);
+      resetUrl.searchParams.append("token", resetToken);
+      console.log({ resetToken, maybeUser, resetUrl });
       // TODO send an actual email
       // Send the reset email
       return;
@@ -102,9 +123,12 @@ export const userRouter = router({
       if (!updateUserResult._ok) {
         switch (updateUserResult.error.code) {
           case "TokenExpired":
-            throw new TRPCError({ code: "BAD_REQUEST", message: "Token expired" });
+            throw new TRPCError({ code: "BAD_REQUEST", message: RESET_TOKEN_ERRORS.TOKEN_EXPIRED });
           case "TokenNotFound":
-            throw new TRPCError({ code: "BAD_REQUEST", message: "Token not found" });
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: RESET_TOKEN_ERRORS.TOKEN_NOT_FOUND,
+            });
           default:
             assertNever(updateUserResult.error.code);
         }

@@ -6,21 +6,27 @@ import { passwordResetTokens } from "./db/schema/password-reset-tokens";
 import { isWithinExpirationDate } from "oslo";
 import { result } from "./result";
 import { CodedError } from "./error";
-
+import { SqliteError } from "better-sqlite3";
 export * as User from "./user";
 
 export async function create({ email, hashedPassword }: { email: string; hashedPassword: string }) {
-  const result = await db
-    .insert(users)
-    .values({ email, hashedPassword })
-    .returning({ id: users.id })
-    .execute()
-    .then((result) => result[0]);
-
-  //TODO reconsider handling this error as a Result type
-  if (!result) throw new Error("Failed to create user");
-
-  return { id: result.id };
+  try {
+    const newUser = await db
+      .insert(users)
+      .values({ email, hashedPassword })
+      .returning({ id: users.id })
+      .execute()
+      .then((result) => result[0]);
+    if (!newUser) throw new Error("Unknown Error");
+    return result.success(newUser);
+  } catch (e) {
+    if (e instanceof SqliteError) {
+      if (e.code === "SQLITE_CONSTRAINT_UNIQUE" && e.message.includes("email")) {
+        return result.fail(new CodedError("UserAlreadyExists"));
+      }
+    }
+    throw e;
+  }
 }
 
 export async function byEmail(email: string) {

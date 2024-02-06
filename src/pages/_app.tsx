@@ -6,7 +6,7 @@ import { AuthenticationProvider } from "@/features/auth/authenticated-user-provi
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <AuthenticationProvider>
-      <Component {...pageProps} />;
+      <Component {...pageProps} />
     </AuthenticationProvider>
   );
 };
