@@ -27,7 +27,7 @@ export async function create({
   }
   const memberId = await db
     .insert(members)
-    .values({ userId: ownerId, organisationId: newOrg.id })
+    .values({ userId: ownerId, organisationId: newOrg.id, organisationRole: "admin" })
     .returning({ memberId: members.id })
     .execute()
     .then((result) => result[0]?.memberId);
@@ -47,6 +47,7 @@ export async function byUserId({ userId }: { userId: string }) {
       name: organisations.name,
       slug: organisations.slug,
       joinedAt: members.createdAt,
+      organisationRole: members.organisationRole,
     })
     .from(members)
     .innerJoin(organisations, eq(members.organisationId, organisations.id))
@@ -78,6 +79,7 @@ export async function withMembershipByUserId({
       slug: organisations.slug,
       joinedAt: members.createdAt,
       memberId: members.id,
+      organisationRole: members.organisationRole,
     })
     .from(members)
     .innerJoin(organisations, eq(members.organisationId, organisations.id))
