@@ -4,6 +4,7 @@ TODO
 - [x] Styling
 - [x] Migrate to Postgres
 - [x] Add created at time to orgs and memberships
+- [x] Support return urls for login/signup
 - [ ] Verify org membership using trpc middleware
 - [ ] Verify org membership via client side provider
 - [ ] Setup email sending

@@ -2,6 +2,7 @@ import { RouterOutput, trpc } from "@/lib/trpc/next-client";
 import { useRouter } from "next/router";
 import { ReactNode, createContext, useContext, useEffect } from "react";
 import { SIGN_IN_URL } from "./config";
+import { getBaseUrl } from "@/lib/utils";
 
 type AuthUser = NonNullable<RouterOutput["user"]["me"]["user"]>;
 
@@ -23,7 +24,9 @@ export const AuthenticatedProvider = ({ children }: { children: ReactNode }) => 
   const router = useRouter();
   useEffect(() => {
     if (auth.user === null) {
-      router.push(SIGN_IN_URL);
+      const url = new URL(SIGN_IN_URL, window.location.origin);
+      url.searchParams.set("returnUrl", router.asPath);
+      router.push(url);
     }
   }, [auth.user, router]);
   if (auth.user === null) {

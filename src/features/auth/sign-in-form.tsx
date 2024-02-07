@@ -22,7 +22,12 @@ export function SignInForm() {
   const signInMutation = trpc.user.signIn.useMutation({
     onSuccess: () => {
       qc.removeQueries();
-      router.push("/");
+      const returnUrl = router.query.returnUrl;
+      if (typeof returnUrl === "string") {
+        router.push(returnUrl);
+      } else {
+        router.push("/");
+      }
     },
     onError: (error) => {
       if (error.message === SIGN_IN_ERRORS.INVALID_CREDENTIALS) {
