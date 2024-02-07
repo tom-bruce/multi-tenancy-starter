@@ -7,11 +7,12 @@ TODO
 - [x] Support return urls for login/signup
 - [x] Verify org membership using trpc middleware
 - [x] Verify org membership via client side provider
+- [x] Add organisation role
+- [ ] Add organisation invites
 - [ ] Create layout api on pages so that we aren't wrapping the whole app in providers
 - [ ] Setup email sending
 - [ ] Email verification on sign up
 - [ ] Implement CSRF protection
-- [ ] Add organisation role
 - [ ] Account disabling
 - [ ] Add role guards to frontend
 - [ ] Setup rate limiting
