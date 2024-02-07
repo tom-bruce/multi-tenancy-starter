@@ -56,9 +56,10 @@ export const AuthenticationProvider = ({ children }: { children: ReactNode }) =>
   if (query.isError) {
     return <div>An error occured</div>;
   }
-  if (query.data === undefined) {
+  if (!query.data) {
     // TODO this shouldn't happen - this seems to be an issue with the useQuery typings
-    throw new Error("An error occurred loading user profile.");
+    console.error("An error occurred loading user profile.");
+    return null;
   }
   return <authContext.Provider value={query.data}>{children}</authContext.Provider>;
 };
@@ -73,6 +74,7 @@ export function useUser() {
 
 export function useAuthenticatedUser() {
   const ctx = useContext(authenticatedAuthContext);
+  console.log({ ctx });
   if (!ctx) {
     throw new Error("useAuthenticatedUser must be used within AuthenticatedUserProvider");
   }

@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "./db";
 import { members } from "./db/schema/members";
 import { organisations } from "./db/schema/organisations";
@@ -42,11 +42,46 @@ export async function create({
 
 export async function byUserId({ userId }: { userId: string }) {
   const orgList = await db
-    .select()
+    .select({
+      id: organisations.id,
+      name: organisations.name,
+      slug: organisations.slug,
+      joinedAt: members.createdAt,
+    })
     .from(members)
     .innerJoin(organisations, eq(members.organisationId, organisations.id))
     .where(eq(members.userId, userId))
     .execute();
   return orgList;
   // .then((result) => result.map((row) => row.organisationId));
+}
+
+export async function bySlug({ slug }: { slug: string }) {
+  return db
+    .select()
+    .from(organisations)
+    .where(eq(organisations.slug, slug))
+    .execute()
+    .then((result) => result[0] ?? null);
+}
+
+export async function withMembershipByUserId({
+  orgSlug,
+  userId,
+}: {
+  orgSlug: string;
+  userId: string;
+}) {
+  return db
+    .select({
+      name: organisations.name,
+      slug: organisations.slug,
+      joinedAt: members.createdAt,
+      memberId: members.id,
+    })
+    .from(members)
+    .innerJoin(organisations, eq(members.organisationId, organisations.id))
+    .where(and(eq(organisations.slug, orgSlug), eq(members.userId, userId)))
+    .execute()
+    .then((result) => result[0] ?? null);
 }

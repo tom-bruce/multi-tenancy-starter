@@ -1,14 +1,21 @@
 import { validateRequest } from "@/lib/validate-request";
-import { CreateNextContextOptions } from "@trpc/server/adapters/next";
+import {
+  CreateNextContextOptions,
+  NextApiRequest,
+  NextApiResponse,
+} from "@trpc/server/adapters/next";
 
-export const createContext = async (opts: CreateNextContextOptions) => {
-  const { session, user } = await validateRequest(opts.req, opts.res);
+export async function createContextInner(req: NextApiRequest, res: NextApiResponse) {
+  const { session, user } = await validateRequest(req, res);
   return {
     session,
     user,
-    req: opts.req,
-    res: opts.res,
+    req,
+    res,
   };
+}
+export const createContext = async (opts: CreateNextContextOptions) => {
+  return createContextInner(opts.req, opts.res);
 };
 
 export type Context = Awaited<ReturnType<typeof createContext>>;

@@ -5,8 +5,9 @@ TODO
 - [x] Migrate to Postgres
 - [x] Add created at time to orgs and memberships
 - [x] Support return urls for login/signup
-- [ ] Verify org membership using trpc middleware
-- [ ] Verify org membership via client side provider
+- [x] Verify org membership using trpc middleware
+- [x] Verify org membership via client side provider
+- [ ] Create layout api on pages so that we aren't wrapping the whole app in providers
 - [ ] Setup email sending
 - [ ] Email verification on sign up
 - [ ] Implement CSRF protection

@@ -8,6 +8,11 @@ import { getBaseUrl } from "@/lib/utils";
 export const trpc = createTRPCNext<AppRouter>({
   config() {
     return {
+      queryClientConfig: {
+        defaultOptions: {
+          queries: { refetchOnWindowFocus: true, retry: false },
+        },
+      },
       links: [
         httpBatchLink({
           url: `${getBaseUrl()}/api/trpc`,

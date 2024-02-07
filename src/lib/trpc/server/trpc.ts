@@ -2,6 +2,8 @@ import { TRPCError, initTRPC } from "@trpc/server";
 import { Context } from "./context";
 import superjson from "superjson";
 import { ZodError } from "zod";
+import { Organisation } from "@/lib/organisation";
+import { baseOrgInputSchema } from "@/features/organisation/schemas";
 
 /**
  * Initialization of tRPC backend
@@ -26,6 +28,7 @@ const t = initTRPC.context<Context>().create({
  */
 export const router = t.router;
 export const publicProcedure = t.procedure;
+export const createCallerFactory = t.createCallerFactory;
 
 const isAuthenticatedMiddleware = t.middleware(({ ctx, next }) => {
   if (!ctx.user) {
@@ -36,11 +39,42 @@ const isAuthenticatedMiddleware = t.middleware(({ ctx, next }) => {
   }
   return next({
     ctx: {
-      ...ctx,
       user: ctx.user,
       session: ctx.session,
     },
   });
 });
+
+/**
+ * Verifies that the user has access to the organisation they are requesting resources in.
+ *
+ * This middleware also extends the request context with organisation and membership data.
+ *
+ * The orgSlug is required in the request input so that react query can properly
+ * isolate tenant data on the client side.
+ * An alternative to this would be swapping sessions on the server when the user switches
+ * organisations, however this isn't preferred as it would clear the entire client side cache.
+ */
+const hasOrganisationAccessMiddleware = isAuthenticatedMiddleware.unstable_pipe(async (opts) => {
+  const rawInput = await opts.getRawInput();
+  const parsedInput = baseOrgInputSchema.safeParse(rawInput);
+  if (!parsedInput.success) {
+    throw new TRPCError({ code: "BAD_REQUEST", message: "orgSlug is missing from request input" });
+  }
+
+  const userOrg = await Organisation.withMembershipByUserId({
+    orgSlug: parsedInput.data.orgSlug,
+    userId: opts.ctx.user.id,
+  });
+  if (!userOrg) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You do not have access to this organisation",
+    });
+  }
+  return opts.next({ ctx: { organisation: userOrg } });
+});
+
+export const organisationProcedure = t.procedure.use(hasOrganisationAccessMiddleware);
 
 export const protectedProcedure = t.procedure.use(isAuthenticatedMiddleware);

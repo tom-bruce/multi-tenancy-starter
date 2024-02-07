@@ -1,5 +1,5 @@
-import { createOrganisationSchema } from "@/features/organisation/schemas";
-import { protectedProcedure, router } from "../trpc";
+import { baseOrgInputSchema, createOrganisationSchema } from "@/features/organisation/schemas";
+import { organisationProcedure, protectedProcedure, router } from "../trpc";
 import { Organisation } from "@/lib/organisation";
 import { sluggify } from "@/lib/utils";
 
@@ -13,5 +13,8 @@ export const organisationRouter = router({
   }),
   list: protectedProcedure.query(async (opts) => {
     return Organisation.byUserId({ userId: opts.ctx.user.id });
+  }),
+  bySlug: organisationProcedure.input(baseOrgInputSchema).query(async (opts) => {
+    return opts.ctx.organisation;
   }),
 });
