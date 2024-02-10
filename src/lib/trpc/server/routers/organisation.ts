@@ -1,5 +1,5 @@
 import { baseOrgInputSchema, createOrganisationSchema } from "@/features/organisation/schemas";
-import { organisationProcedure, protectedProcedure, router } from "../trpc";
+import { organisationProcedure, protectedProcedure, roleProtectedProcedure, router } from "../trpc";
 import { Organisation } from "@/lib/organisation";
 import { sluggify } from "@/lib/utils";
 
@@ -17,4 +17,9 @@ export const organisationRouter = router({
   bySlug: organisationProcedure.input(baseOrgInputSchema).query(async (opts) => {
     return opts.ctx.organisation;
   }),
+  invites: roleProtectedProcedure("admin")
+    .input(baseOrgInputSchema)
+    .query(async ({ ctx }) => {
+      return { ok: true };
+    }),
 });

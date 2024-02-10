@@ -4,6 +4,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 import { Organisation } from "@/lib/organisation";
 import { baseOrgInputSchema } from "@/features/organisation/schemas";
+import type { OrganisationRole } from "@/lib/db/schema";
 
 /**
  * Initialization of tRPC backend
@@ -74,6 +75,22 @@ const hasOrganisationAccessMiddleware = isAuthenticatedMiddleware.unstable_pipe(
   }
   return opts.next({ ctx: { organisation: userOrg } });
 });
+
+/**
+ * Factory function for generating a procedure requiring a specific role
+ */
+export function roleProtectedProcedure(role: OrganisationRole) {
+  const middleware = hasOrganisationAccessMiddleware.unstable_pipe(async (opts) => {
+    if (opts.ctx.organisation.organisationRole !== role) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: `You do not have the required role to perform this action`,
+      });
+    }
+    return opts.next();
+  });
+  return organisationProcedure.use(middleware);
+}
 
 export const organisationProcedure = t.procedure.use(hasOrganisationAccessMiddleware);
 
