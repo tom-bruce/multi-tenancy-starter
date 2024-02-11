@@ -14,7 +14,8 @@
     "db:pull": "drizzle-kit introspect:pg",
     "db:push": "drizzle-kit push:pg",
     "db:studio": "drizzle-kit studio",
-    "db:check": "drizzle-kit check:pg"
+    "db:check": "drizzle-kit check:pg",
+    "email:dev": "email dev --dir src/lib/email/templates --port 3030"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
@@ -22,6 +23,7 @@
     "@neondatabase/serverless": "^0.7.2",
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-slot": "^1.0.2",
+    "@react-email/components": "0.0.14",
     "@tanstack/react-query": "^5.18.1",
     "@tanstack/react-query-devtools": "^5.18.1",
     "@trpc/client": "11.0.0-next-beta.255",
@@ -38,7 +40,9 @@
     "oslo": "^1.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-email": "2.0.0",
     "react-hook-form": "^7.50.0",
+    "resend": "^3.1.0",
     "superjson": "^2.2.1",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",

@@ -12,7 +12,7 @@ TODO
 - [x] Add role guards to frontend
 - [x] Add role guard to API
 - [ ] Create layout api on pages so that we aren't wrapping the whole app in providers
-- [ ] Setup email sending
+- [x] Setup email sending
 - [ ] Email verification on sign up
 - [ ] Implement CSRF protection
 - [ ] Account disabling

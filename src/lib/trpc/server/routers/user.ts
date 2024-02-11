@@ -17,6 +17,10 @@ import {
   SIGN_UP_ERRORS,
   VERIFY_RESET_TOKEN_URL,
 } from "@/features/auth/config";
+import { resend } from "@/lib/email/resend";
+import Welcome from "@/lib/email/templates/Welcome";
+import { sendMail } from "@/lib/email/send-mail";
+import PasswordReset from "@/lib/email/templates/password-reset";
 
 export const userRouter = router({
   me: publicProcedure.query(async (opts) => {
@@ -41,6 +45,11 @@ export const userRouter = router({
       }
     }
     const user = createResult.value;
+    await sendMail({
+      to: input.email,
+      subject: "Welcome to Template",
+      react: Welcome({ email: input.email }),
+    });
     //@ts-expect-error
     const session = await lucia.createSession(user.id, {}, { sessionId: generateId("session") });
     const sessionCookie = lucia.createSessionCookie(session.id);
@@ -107,8 +116,14 @@ export const userRouter = router({
       const resetUrl = new URL(VERIFY_RESET_TOKEN_URL, baseUrl);
       resetUrl.searchParams.append("token", resetToken);
       console.log({ resetToken, maybeUser, resetUrl });
-      // TODO send an actual email
+
       // Send the reset email
+      await sendMail({
+        to: input.email,
+        subject: "Password Reset Request",
+        react: PasswordReset({ resetUrl: resetUrl.toString() }),
+      });
+
       return;
     }),
   verifyResetToken: publicProcedure
