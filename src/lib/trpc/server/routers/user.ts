@@ -10,17 +10,16 @@ import { User } from "@/lib/user";
 import { lucia } from "@/lib/auth";
 import { generateId } from "@/lib/id";
 import { TRPCError } from "@trpc/server";
-import { assertNever, delay, getBaseUrl } from "@/lib/utils";
+import { assertNever, getBaseUrl } from "@/lib/utils";
 import {
   RESET_TOKEN_ERRORS,
   SIGN_IN_ERRORS,
   SIGN_UP_ERRORS,
   VERIFY_RESET_TOKEN_URL,
 } from "@/features/auth/config";
-import { resend } from "@/lib/email/resend";
-import Welcome from "@/lib/email/templates/Welcome";
 import { sendMail } from "@/lib/email/send-mail";
 import PasswordReset from "@/lib/email/templates/password-reset";
+import Welcome from "@/lib/email/templates/welcome";
 
 export const userRouter = router({
   me: publicProcedure.query(async (opts) => {
@@ -47,7 +46,8 @@ export const userRouter = router({
     const user = createResult.value;
     await sendMail({
       to: input.email,
-      subject: "Welcome to Template",
+      subject: "Welcome to Placeholder",
+      from: "Tom at Placeholder <welcome@tombruce.au>",
       react: Welcome({ email: input.email }),
     });
     //@ts-expect-error
@@ -120,6 +120,7 @@ export const userRouter = router({
       // Send the reset email
       await sendMail({
         to: input.email,
+        from: "Tom Bruce <support@tombruce.au>",
         subject: "Password Reset Request",
         react: PasswordReset({ resetUrl: resetUrl.toString() }),
       });
