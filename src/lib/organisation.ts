@@ -142,6 +142,7 @@ export async function createInvite({
       .then((r) => r[0] ?? null);
   }
 
+  // TODO could potentially be refactored to one query
   const [existingMember, existingInvite] = await Promise.all([
     existingOrgMembership(),
     existingPendingInvite(),
@@ -154,45 +155,7 @@ export async function createInvite({
   if (existingInvite) {
     return result.fail(new CodedError("InviteAlreadyExists"));
   }
-  // TODO verify that the user isn't already a member
-  // const existingMember = await db
-  //   .select({ id: members.id })
-  //   .from(members)
-  //   .innerJoin(users, eq(members.userId, users.id))
-  //   .leftJoin(organisationInvites, eq(organisationInvites.email, users.email))
-  //   .where(
-  //     and(
-  //       eq(users.email, email),
-  //       eq(members.organisationId, orgId),
-  //       eq(organisationInvites.status, "pending")
-  //       // gt
-  //     )
-  //   )
-  //   .execute()
-  //   .then((r) => r[0] ?? null);
 
-  // if (existingMember) {
-  //   return result.fail(new CodedError("MemberAlreadyExists"));
-  // }
-
-  // const existingInvite = await db
-  //   .select({ id: organisationInvites.id })
-  //   .from(organisationInvites)
-  //   .where(
-  //     and(
-  //       eq(organisationInvites.email, email),
-  //       eq(organisationInvites.organisationId, orgId),
-  //       eq(organisationInvites.status, "pending")
-  //       // TODO need to filter expired invites
-  //       // gt(organisationInvites.expiresAt, isWithinExpirationDate())
-  //     )
-  //   )
-  //   .execute()
-  //   .then((r) => r[0] ?? null);
-
-  // if (existingInvite) {
-  //   return result.fail(new CodedError("InviteAlreadyExists"));
-  // }
   const inviteResult = await db
     .insert(organisationInvites)
     .values({
@@ -212,7 +175,7 @@ export async function createInvite({
   return result.success(inviteResult);
 }
 
-export async function listInvites({ orgId }: { orgId: string }) {
+export async function listPendingInvites({ orgId }: { orgId: string }) {
   return db
     .select({
       email: organisationInvites.email,

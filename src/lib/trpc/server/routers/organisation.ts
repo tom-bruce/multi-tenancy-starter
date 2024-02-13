@@ -68,6 +68,6 @@ export const organisationRouter = router({
   invites: roleProtectedProcedure("admin")
     .input(baseOrgInputSchema)
     .query(async ({ ctx }) => {
-      return Organisation.listInvites({ orgId: ctx.organisation.id });
+      return Organisation.listPendingInvites({ orgId: ctx.organisation.id });
     }),
 });
