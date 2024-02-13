@@ -35,7 +35,12 @@ function PageInner() {
         role="admin"
         fallback={<p>Only admins can invite new members to join the organisation.</p>}
       >
-        <OrganisationInviteForm />
+        <div className="mx-auto max-w-2xl">
+          <OrganisationInviteForm />
+          <Suspense fallback={<p>Loading...</p>}>
+            <OrganisationInviteList />
+          </Suspense>
+        </div>
       </Protect>
     </div>
   );

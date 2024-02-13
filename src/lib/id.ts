@@ -5,6 +5,7 @@ const RESOURCES = {
   user: "user",
   organisation: "org",
   member: "mem",
+  invite: "inv",
 };
 
 type Resource = keyof typeof RESOURCES;

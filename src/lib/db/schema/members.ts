@@ -5,7 +5,7 @@ import { generateId } from "@/lib/id";
 import { pgTable, varchar } from "drizzle-orm/pg-core";
 import { InferSelectModel } from "drizzle-orm";
 
-const organisationRoleEnum = pgEnum("organisation_role", ["member", "admin"]);
+export const organisationRoleEnum = pgEnum("organisation_role", ["member", "admin"]);
 
 export const members = pgTable("members", {
   id: varchar("id")

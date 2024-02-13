@@ -6,5 +6,9 @@ export function OrganisationInviteList() {
     { orgSlug: useOrganisationSlug() },
     { retry: false }
   );
-  return <pre>{JSON.stringify(invitesQuery, null, 2)}</pre>;
+  // const [invites] = trpc.organisation.invites.useSuspenseQuery(
+  //   { orgSlug: useOrganisationSlug() },
+  //   { retry: false }
+  // );
+  return <pre>{JSON.stringify(invitesQuery.data, null, 2)}</pre>;
 }
