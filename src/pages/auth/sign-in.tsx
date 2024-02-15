@@ -17,7 +17,9 @@ export default function SignUpPage() {
     <main>
       <h1>Sign In</h1>
       <SignInForm />
-      <Link href={SIGN_UP_URL}>Sign Up</Link>
+      <Link href={{ pathname: SIGN_UP_URL, query: { returnUrl: router.query.returnUrl } }}>
+        Sign Up
+      </Link>
     </main>
   );
 }

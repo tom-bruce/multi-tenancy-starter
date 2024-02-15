@@ -26,9 +26,29 @@ export const organisationRouter = router({
   bySlug: organisationProcedure.input(baseOrgInputSchema).query(async (opts) => {
     return opts.ctx.organisation;
   }),
+  members: organisationProcedure.input(baseOrgInputSchema).query(async ({ input, ctx }) => {
+    return Organisation.listMembers({ orgId: ctx.organisation.id });
+  }),
   acceptInvite: protectedProcedure
     .input(z.object({ inviteToken: z.string().min(1) }))
-    .mutation(async (opts) => {}),
+    .mutation(async (opts) => {
+      /* 
+        TODO this might need more strict rate limiting to prevent brute force attacks
+        Although the user needs to be logged in with the same email as the invited email
+        (which is verified on sign up)
+      */
+      const acceptResult = await Organisation.acceptInvitation({
+        inviteToken: opts.input.inviteToken,
+        loggedInUser: {
+          email: opts.ctx.user.email,
+          id: opts.ctx.user.id,
+        },
+      });
+      if (!acceptResult._ok) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: acceptResult.error.message });
+      }
+      return;
+    }),
   invite: roleProtectedProcedure("admin")
     .input(baseOrgInputSchema.merge(inviteSchema))
     .mutation(async ({ ctx, input }) => {
@@ -56,11 +76,26 @@ export const organisationRouter = router({
         subject: `You've been invited to join ${ctx.organisation.name} on Template`,
         to: input.email,
         react: OrganisationInvite({
-          acceptInviteUrl: `http://localhost:3000/invite/${inviteResult.value.inviteToken}`,
+          acceptInviteUrl: `http://localhost:3000/auth/invite/${inviteResult.value.inviteToken}`,
           oragnisationName: ctx.organisation.name,
         }),
       });
       return;
+    }),
+  inviteDetails: protectedProcedure
+    .input(z.object({ inviteToken: z.string().min(1) }))
+    .query(async ({ input, ctx }) => {
+      const inviteDetails = await Organisation.byInviteToken({
+        inviteToken: input.inviteToken,
+        invitedEmail: ctx.user.email,
+      });
+      if (!inviteDetails) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Invite not found",
+        });
+      }
+      return inviteDetails;
     }),
   revokeInvite: roleProtectedProcedure("admin")
     .input(baseOrgInputSchema)

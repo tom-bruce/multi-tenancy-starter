@@ -4,9 +4,7 @@ import { members } from "./db/schema/members";
 import { organisations } from "./db/schema/organisations";
 import { organisationInvites } from "./db/schema/organisation-invites";
 import { generateId } from "lucia";
-import { TimeSpan, createDate, isWithinExpirationDate } from "oslo";
-import { sendMail } from "./email/send-mail";
-import OrganisationInvite from "./email/templates/organisation-invite";
+import { TimeSpan, createDate } from "oslo";
 import { users } from "./db/schema/users";
 import { result } from "./result";
 import { CodedError } from "./error";
@@ -192,4 +190,96 @@ export async function listPendingInvites({ orgId }: { orgId: string }) {
     )
     .execute()
     .then((result) => result);
+}
+
+/**
+ * Gets organisation details by a valid invite token
+ */
+export async function byInviteToken({
+  inviteToken,
+  invitedEmail,
+}: {
+  inviteToken: string;
+  invitedEmail: string;
+}) {
+  return db
+    .select({ name: organisations.name, slug: organisations.slug })
+    .from(organisations)
+    .innerJoin(organisationInvites, eq(organisations.id, organisationInvites.organisationId))
+    .where(
+      and(
+        eq(organisationInvites.status, "pending"),
+        gt(organisationInvites.expiresAt, new Date()),
+        eq(organisationInvites.token, inviteToken),
+        eq(organisationInvites.email, invitedEmail)
+      )
+    )
+    .execute()
+    .then((r) => r[0] ?? null);
+}
+
+/**
+ * Accepts an invitation to join an organisation.
+ * Validates the invite token is valid.
+ */
+export async function acceptInvitation({
+  inviteToken,
+  loggedInUser,
+}: {
+  inviteToken: string;
+  loggedInUser: {
+    email: string;
+    id: string;
+  };
+}) {
+  const token = await db
+    .select()
+    .from(organisationInvites)
+    .where(eq(organisationInvites.token, inviteToken))
+    .execute()
+    .then((r) => r[0] ?? null);
+
+  if (!token) {
+    return result.fail(new CodedError("TokenNotFound"));
+  }
+
+  if (token.status !== "pending") {
+    return result.fail(new CodedError("TokenExpired"));
+  }
+
+  if (token.expiresAt < new Date()) {
+    return result.fail(new CodedError("TokenExpired"));
+  }
+
+  if (token.email !== loggedInUser.email) {
+    return result.fail(new CodedError("EmailMismatch"));
+  }
+
+  // TODO this should be in a transaction but the Neon serverless driver doesn't currently support it
+  await db
+    .insert(members)
+    .values({ organisationId: token.organisationId, userId: loggedInUser.id });
+
+  await db
+    .update(organisationInvites)
+    .set({ status: "used", acceptedAt: new Date() })
+    .where(eq(organisationInvites.token, inviteToken));
+
+  return result.success(true);
+}
+
+export async function listMembers({ orgId }: { orgId: string }) {
+  return db
+    .select({
+      id: members.id,
+      userId: members.userId,
+      email: users.email,
+      role: members.organisationRole,
+      joinedAt: members.createdAt,
+    })
+    .from(members)
+    .innerJoin(users, eq(members.userId, users.id))
+    .where(eq(members.organisationId, orgId))
+    .execute()
+    .then((r) => r ?? null);
 }

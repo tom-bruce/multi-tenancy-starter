@@ -8,7 +8,7 @@ TODO
 - [x] Verify org membership using trpc middleware
 - [x] Verify org membership via client side provider
 - [x] Add organisation role
-- [ ] Add organisation invites
+- [x] Add organisation invites
 - [x] Add role guards to frontend
 - [x] Add role guard to API
 - [ ] Create layout api on pages so that we aren't wrapping the whole app in providers
@@ -17,3 +17,9 @@ TODO
 - [ ] Implement CSRF protection
 - [ ] Account disabling
 - [ ] Setup rate limiting
+- [x] Add passing the return url params to the signup page
+- [ ] Revoke organisation invites (admin)
+- [ ] Remove members from organisations (admin)
+- [ ] Invite with role
+- [ ] Proper styling of UI
+- [ ] Let a user view and delete their active sessions (ie sign out another machine)

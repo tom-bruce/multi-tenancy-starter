@@ -1,4 +1,5 @@
 import { AuthenticatedProvider } from "@/features/auth/authenticated-user-provider";
+import { MembersList } from "@/features/organisation/members-list";
 import { OrganisationInviteForm } from "@/features/organisation/organisation-invite-form";
 import { OrganisationInviteList } from "@/features/organisation/organisation-invite-list";
 import { OrganisationList } from "@/features/organisation/organisation-list";
@@ -7,8 +8,6 @@ import {
   useOrganisation,
 } from "@/features/organisation/organisation-provider";
 import { Protect } from "@/features/organisation/protect";
-import { useOrganisationSlug } from "@/features/organisation/use-organisation-slug";
-import { trpc } from "@/lib/trpc/next-client";
 import { Suspense } from "react";
 
 export default function OrganisationHomePage() {
@@ -27,14 +26,11 @@ function PageInner() {
     <div>
       <h1>{org.name} Home Page</h1>
       <pre>{JSON.stringify(org, null, 2)}</pre>
+      <MembersList />
       <Suspense>
         <OrganisationList />
       </Suspense>
-      <OrganisationInviteList />
-      <Protect
-        role="admin"
-        fallback={<p>Only admins can invite new members to join the organisation.</p>}
-      >
+      <Protect role="admin" fallback={<p>Only admins can manage organisation memberships.</p>}>
         <div className="mx-auto max-w-2xl">
           <OrganisationInviteForm />
           <Suspense fallback={<p>Loading...</p>}>

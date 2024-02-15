@@ -10,5 +10,11 @@ export function OrganisationInviteList() {
   //   { orgSlug: useOrganisationSlug() },
   //   { retry: false }
   // );
-  return <pre>{JSON.stringify(invitesQuery.data, null, 2)}</pre>;
+
+  return (
+    <div>
+      <h2>Pending Invites</h2>
+      <pre>{JSON.stringify(invitesQuery.data, null, 2)}</pre>
+    </div>
+  );
 }

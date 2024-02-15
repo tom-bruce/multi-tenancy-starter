@@ -41,14 +41,7 @@ export const AuthenticatedProvider = ({ children }: { children: ReactNode }) => 
 };
 
 export const AuthenticationProvider = ({ children }: { children: ReactNode }) => {
-  const router = useRouter();
   const query = trpc.user.me.useQuery(undefined, { retry: false });
-
-  useEffect(() => {
-    if (query.isError || query.data === null) {
-      router.push(SIGN_IN_URL);
-    }
-  }, [query.data, query.isError, router]);
 
   if (query.isLoading) {
     return <div>Performing Auth Check...</div>;

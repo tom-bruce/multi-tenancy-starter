@@ -23,7 +23,12 @@ export function SignUpForm() {
   const signUpMutation = trpc.user.signUp.useMutation({
     onSuccess: () => {
       qc.removeQueries();
-      router.push("/");
+      const returnUrl = router.query.returnUrl;
+      if (typeof returnUrl === "string") {
+        router.push(returnUrl);
+      } else {
+        router.push("/");
+      }
     },
     onError: (error) => {
       if (error.message === SIGN_UP_ERRORS.EMAIL_IN_USE) {
