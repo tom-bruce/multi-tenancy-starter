@@ -15,7 +15,6 @@ TODO
 - [x] Setup email sending
 - [ ] Email verification on sign up
 - [ ] Implement CSRF protection
-- [ ] Account disabling
 - [ ] Setup rate limiting
 - [x] Add passing the return url params to the signup page
 - [ ] Revoke organisation invites (admin)
@@ -23,3 +22,6 @@ TODO
 - [ ] Invite with role
 - [ ] Proper styling of UI
 - [ ] Let a user view and delete their active sessions (ie sign out another machine)
+- [ ] Profile database queries and assigned indexes to improve query performance
+- [ ] Setup user level roles (ie for SaaS owner vs user)
+- [ ] Account disabling

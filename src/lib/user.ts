@@ -7,6 +7,7 @@ import { createDate, TimeSpan, isWithinExpirationDate } from "oslo";
 import { result } from "./result";
 import { CodedError } from "./error";
 import { DatabaseError, NeonDbError } from "@neondatabase/serverless";
+import { sessions } from "./db/schema/sessions";
 export * as User from "./user";
 
 export async function create({ email, hashedPassword }: { email: string; hashedPassword: string }) {
@@ -88,4 +89,9 @@ export async function changePasswordWithResetToken({
     throw new Error("Failed to update user's password");
   }
   return result.success(updatedUser);
+}
+
+export async function activeSessions({ userId }: { userId: string }) {
+  // This would become more useful if we included information like last used, user agent, IP address etc
+  return db.select({ id: sessions.id }).from(sessions).where(eq(sessions.userId, userId)).execute();
 }
