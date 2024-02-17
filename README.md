@@ -14,7 +14,7 @@ TODO
 - [ ] Create layout api on pages so that we aren't wrapping the whole app in providers
 - [x] Setup email sending
 - [ ] Email verification on sign up
-- [ ] Implement CSRF protection
+- [x] Implement CSRF protection
 - [ ] Setup rate limiting
 - [x] Add passing the return url params to the signup page
 - [ ] Revoke organisation invites (admin)
