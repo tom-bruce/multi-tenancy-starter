@@ -15,17 +15,22 @@ import {
   RESET_TOKEN_ERRORS,
   SIGN_IN_ERRORS,
   SIGN_UP_ERRORS,
+  TRIGGER_RESET_ERRORS,
   VERIFY_RESET_TOKEN_URL,
 } from "@/features/auth/config";
 import { sendMail } from "@/lib/email/send-mail";
 import PasswordReset from "@/lib/email/templates/password-reset";
 import Welcome from "@/lib/email/templates/welcome";
+import { rateLimiter } from "@/lib/rate-limiter";
+import { assertRateLimited } from "@/lib/assert-rate-limited";
 
 export const userRouter = router({
   me: publicProcedure.query(async (opts) => {
     return { user: opts.ctx.user ?? null };
   }),
   signUp: publicProcedure.input(signUpSchema).mutation(async ({ input, ctx }) => {
+    await assertRateLimited({ limitType: "auth", identifier: ctx.clientIp });
+
     if (ctx.user) {
       throw new TRPCError({ code: "BAD_REQUEST", message: "Already signed in" });
     }
@@ -57,6 +62,8 @@ export const userRouter = router({
     return;
   }),
   signIn: publicProcedure.input(signInSchema).mutation(async ({ input, ctx }) => {
+    await assertRateLimited({ limitType: "auth", identifier: input.email });
+
     const maybeUser = await User.byEmail(input.email);
 
     if (!maybeUser) {
@@ -101,12 +108,14 @@ export const userRouter = router({
   triggerResetPassword: publicProcedure
     .input(resetPasswordSchema)
     .mutation(async ({ ctx, input }) => {
+      await assertRateLimited({ limitType: "auth", identifier: ctx.clientIp });
+
       const maybeUser = await User.byEmail(input.email);
       if (!maybeUser) {
         // Not ideal to expose this information, however it is inevitably exposed during the sign up process hence could be enumerated from there
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "An account doesn't exist with this email",
+          message: TRIGGER_RESET_ERRORS.EMAIL_NOT_FOUND,
         });
       }
 
@@ -115,7 +124,6 @@ export const userRouter = router({
       const baseUrl = getBaseUrl();
       const resetUrl = new URL(VERIFY_RESET_TOKEN_URL, baseUrl);
       resetUrl.searchParams.append("token", resetToken);
-      console.log({ resetToken, maybeUser, resetUrl });
 
       // Send the reset email
       await sendMail({
@@ -130,6 +138,8 @@ export const userRouter = router({
   verifyResetToken: publicProcedure
     .input(verifyResetTokenSchema)
     .mutation(async ({ ctx, input }) => {
+      await assertRateLimited({ limitType: "auth", identifier: ctx.clientIp });
+
       const newHashedPassword = await Password.hash(input.newPassword);
       const updateUserResult = await User.changePasswordWithResetToken({
         newHashedPassword,

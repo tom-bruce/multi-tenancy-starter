@@ -12,11 +12,23 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { isRateLimited } from "./is-rate-limited";
+import { TRIGGER_RESET_ERRORS } from "./config";
 
 export function TriggerResetPasswordForm() {
-  const resetPasswordMutation = trpc.user.triggerResetPassword.useMutation();
-
   const form = useZodForm(resetPasswordSchema, { defaultValues: { email: "" } });
+  const resetPasswordMutation = trpc.user.triggerResetPassword.useMutation({
+    onError(error) {
+      if (isRateLimited(error)) {
+        form.setError("root", { message: "Reset password limit reached. Please try again soon." });
+      } else if (error.message === TRIGGER_RESET_ERRORS.EMAIL_NOT_FOUND) {
+        form.setError("email", { message: TRIGGER_RESET_ERRORS.EMAIL_NOT_FOUND });
+      } else {
+        form.setError("root", { message: "An unknown error has occured." });
+      }
+    },
+  });
+
   const onSubmit = form.handleSubmit((data) => resetPasswordMutation.mutate(data));
   return (
     <Form {...form}>

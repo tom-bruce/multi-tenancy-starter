@@ -5,12 +5,12 @@ import {
 } from "@/features/organisation/schemas";
 import { organisationProcedure, protectedProcedure, roleProtectedProcedure, router } from "../trpc";
 import { Organisation } from "@/lib/organisation";
-import { assertNever, sluggify } from "@/lib/utils";
+import { assertNever, getBaseUrl, sluggify } from "@/lib/utils";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { sendMail } from "@/lib/email/send-mail";
 import OrganisationInvite from "@/lib/email/templates/organisation-invite";
-import { INVITE_ERRORS } from "@/features/organisation/config";
+import { INVITE_ERRORS, ORGANISATION_INVITE_URL } from "@/features/organisation/config";
 
 export const organisationRouter = router({
   create: protectedProcedure.input(createOrganisationSchema).mutation(async (opts) => {
@@ -30,6 +30,7 @@ export const organisationRouter = router({
     return Organisation.listMembers({ orgId: ctx.organisation.id });
   }),
   acceptInvite: protectedProcedure
+    .meta({ rateLimitType: "auth" })
     .input(z.object({ inviteToken: z.string().min(1) }))
     .mutation(async (opts) => {
       /* 
@@ -72,11 +73,16 @@ export const organisationRouter = router({
           assertNever(inviteResult.error);
         }
       }
+
+      const acceptInviteUrl = new URL(
+        `${ORGANISATION_INVITE_URL}/${inviteResult.value.inviteToken}`,
+        getBaseUrl()
+      );
       await sendMail({
         subject: `You've been invited to join ${ctx.organisation.name} on Template`,
         to: input.email,
         react: OrganisationInvite({
-          acceptInviteUrl: `http://localhost:3000/auth/invite/${inviteResult.value.inviteToken}`,
+          acceptInviteUrl: acceptInviteUrl.toString(),
           oragnisationName: ctx.organisation.name,
         }),
       });
@@ -90,6 +96,7 @@ export const organisationRouter = router({
         invitedEmail: ctx.user.email,
       });
       if (!inviteDetails) {
+        // TODO use a config error message and handle on the frontend
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Invite not found",

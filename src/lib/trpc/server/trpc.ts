@@ -5,23 +5,31 @@ import { ZodError } from "zod";
 import { Organisation } from "@/lib/organisation";
 import { baseOrgInputSchema } from "@/features/organisation/schemas";
 import type { OrganisationRole } from "@/lib/db/schema";
+import { RateLimitType, rateLimiter } from "@/lib/rate-limiter";
 
+interface Metadata {
+  rateLimitType: RateLimitType;
+}
 /**
  * Initialization of tRPC backend
  * Should be done only once per backend!
  */
-const t = initTRPC.context<Context>().create({
-  transformer: superjson,
-  errorFormatter({ shape, error }) {
-    return {
-      ...shape,
-      data: {
-        ...shape.data,
-        zodError: error.cause instanceof ZodError ? error.cause.flatten() : null,
-      },
-    };
-  },
-});
+const t = initTRPC
+  .context<Context>()
+  .meta<Metadata>()
+  .create({
+    defaultMeta: { rateLimitType: "core" },
+    transformer: superjson,
+    errorFormatter({ shape, error }) {
+      return {
+        ...shape,
+        data: {
+          ...shape.data,
+          zodError: error.cause instanceof ZodError ? error.cause.flatten() : null,
+        },
+      };
+    },
+  });
 
 /**
  * Export reusable router and procedure helpers
@@ -46,6 +54,21 @@ const isAuthenticatedMiddleware = t.middleware(({ ctx, next }) => {
   });
 });
 
+const isAuthenticatedRatelimitMiddleware = isAuthenticatedMiddleware.unstable_pipe(async (opts) => {
+  const limiter = rateLimiter();
+  const limitResult = await limiter({
+    limitType: (opts.meta ?? { rateLimitType: "core" }).rateLimitType,
+    identifier: opts.ctx.user.id,
+  });
+
+  if (!limitResult.success) {
+    throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
+  }
+  opts.ctx.res.setHeader("X-RateLimit-Limit", limitResult.limit);
+  opts.ctx.res.setHeader("X-RateLimit-Remaining", limitResult.remaining);
+
+  return opts.next();
+});
 /**
  * Verifies that the user has access to the organisation they are requesting resources in.
  *
@@ -56,25 +79,30 @@ const isAuthenticatedMiddleware = t.middleware(({ ctx, next }) => {
  * An alternative to this would be swapping sessions on the server when the user switches
  * organisations, however this isn't preferred as it would clear the entire client side cache.
  */
-const hasOrganisationAccessMiddleware = isAuthenticatedMiddleware.unstable_pipe(async (opts) => {
-  const rawInput = await opts.getRawInput();
-  const parsedInput = baseOrgInputSchema.safeParse(rawInput);
-  if (!parsedInput.success) {
-    throw new TRPCError({ code: "BAD_REQUEST", message: "orgSlug is missing from request input" });
-  }
+const hasOrganisationAccessMiddleware = isAuthenticatedRatelimitMiddleware.unstable_pipe(
+  async (opts) => {
+    const rawInput = await opts.getRawInput();
+    const parsedInput = baseOrgInputSchema.safeParse(rawInput);
+    if (!parsedInput.success) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "orgSlug is missing from request input",
+      });
+    }
 
-  const userOrg = await Organisation.withMembershipByUserId({
-    orgSlug: parsedInput.data.orgSlug,
-    userId: opts.ctx.user.id,
-  });
-  if (!userOrg) {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "You do not have access to this organisation",
+    const userOrg = await Organisation.withMembershipByUserId({
+      orgSlug: parsedInput.data.orgSlug,
+      userId: opts.ctx.user.id,
     });
+    if (!userOrg) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "You do not have access to this organisation",
+      });
+    }
+    return opts.next({ ctx: { organisation: userOrg } });
   }
-  return opts.next({ ctx: { organisation: userOrg } });
-});
+);
 
 /**
  * Factory function for generating a procedure requiring a specific role
@@ -94,4 +122,4 @@ export function roleProtectedProcedure(role: OrganisationRole) {
 
 export const organisationProcedure = t.procedure.use(hasOrganisationAccessMiddleware);
 
-export const protectedProcedure = t.procedure.use(isAuthenticatedMiddleware);
+export const protectedProcedure = t.procedure.use(isAuthenticatedRatelimitMiddleware);

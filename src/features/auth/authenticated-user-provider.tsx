@@ -67,7 +67,6 @@ export function useUser() {
 
 export function useAuthenticatedUser() {
   const ctx = useContext(authenticatedAuthContext);
-  console.log({ ctx });
   if (!ctx) {
     throw new Error("useAuthenticatedUser must be used within AuthenticatedUserProvider");
   }

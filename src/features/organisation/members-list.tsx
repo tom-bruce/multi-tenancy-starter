@@ -12,7 +12,6 @@ export function MembersList() {
   if (query.isLoading) {
     return <p>Loading</p>;
   }
-  console.log(query.data);
   if (!query.data?.length) {
     return <p>No members</p>;
   }

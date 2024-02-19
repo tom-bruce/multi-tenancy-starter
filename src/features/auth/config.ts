@@ -18,3 +18,7 @@ export const RESET_TOKEN_ERRORS = {
   TOKEN_EXPIRED: "Your token has expired. Please request a new one and try again.",
   TOKEN_NOT_FOUND: "Token not found. Please request a new one and try again.",
 };
+
+export const TRIGGER_RESET_ERRORS = {
+  EMAIL_NOT_FOUND: "An account doesn't exist with this email",
+};

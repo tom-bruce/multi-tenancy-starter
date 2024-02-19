@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SIGN_UP_ERRORS } from "./config";
 import { useQueryClient } from "@tanstack/react-query";
+import { isRateLimited } from "./is-rate-limited";
 
 export function SignUpForm() {
   const router = useRouter();
@@ -31,7 +32,11 @@ export function SignUpForm() {
       }
     },
     onError: (error) => {
-      if (error.message === SIGN_UP_ERRORS.EMAIL_IN_USE) {
+      if (isRateLimited(error)) {
+        form.setError("root", {
+          message: "Sign up limit exceeded. Please try again soon.",
+        });
+      } else if (error.message === SIGN_UP_ERRORS.EMAIL_IN_USE) {
         form.setError("email", { message: SIGN_UP_ERRORS.EMAIL_IN_USE });
       } else {
         form.setError("root", { message: "An unexpected error occurred. Please try again." });

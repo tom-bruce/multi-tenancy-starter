@@ -15,6 +15,7 @@ import { useRouter } from "next/router";
 import { signUpSchema } from "./schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { SIGN_IN_ERRORS } from "./config";
+import { isRateLimited } from "./is-rate-limited";
 
 export function SignInForm() {
   const router = useRouter();
@@ -30,7 +31,9 @@ export function SignInForm() {
       }
     },
     onError: (error) => {
-      if (error.message === SIGN_IN_ERRORS.INVALID_CREDENTIALS) {
+      if (isRateLimited(error)) {
+        form.setError("root", { message: "Login limit exceeded, please try again soon." });
+      } else if (error.message === SIGN_IN_ERRORS.INVALID_CREDENTIALS) {
         form.setError("root", { message: SIGN_IN_ERRORS.INVALID_CREDENTIALS });
       } else if (error.message === SIGN_IN_ERRORS.USER_LINKED_WITH_ANOTHER_ACCOUNT) {
         form.setError("root", { message: SIGN_IN_ERRORS.USER_LINKED_WITH_ANOTHER_ACCOUNT });
