@@ -13,7 +13,7 @@ TODO
 - [x] Add role guard to API
 - [ ] Create layout api on pages so that we aren't wrapping the whole app in providers
 - [x] Setup email sending
-- [ ] Email verification on sign up
+- [x] Email verification on sign up
 - [x] Implement CSRF protection
 - [x] Setup rate limiting
 - [x] Add passing the return url params to the signup page
