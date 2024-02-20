@@ -9,6 +9,7 @@ export const users = pgTable("users", {
     .$defaultFn(() => generateId("user")),
   email: varchar("email").notNull().unique(),
   hashedPassword: varchar("hashed_password"),
+  verifiedAt: timestamp("verified_at", { mode: "date" }),
   createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull().defaultNow(),
 });
 

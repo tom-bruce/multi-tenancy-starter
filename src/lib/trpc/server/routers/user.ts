@@ -1,8 +1,9 @@
-import { publicProcedure, router } from "../trpc";
+import { protectedProcedure, publicProcedure, router } from "../trpc";
 import {
   resetPasswordSchema,
   signInSchema,
   signUpSchema,
+  verifyEmailSchema,
   verifyResetTokenSchema,
 } from "@/features/auth/schemas";
 import { Password } from "@/lib/password";
@@ -16,18 +17,69 @@ import {
   SIGN_IN_ERRORS,
   SIGN_UP_ERRORS,
   TRIGGER_RESET_ERRORS,
+  VERIFY_EMAIL_ERRORS,
   VERIFY_RESET_TOKEN_URL,
 } from "@/features/auth/config";
 import { sendMail } from "@/lib/email/send-mail";
 import PasswordReset from "@/lib/email/templates/password-reset";
-import Welcome from "@/lib/email/templates/welcome";
-import { rateLimiter } from "@/lib/rate-limiter";
+import EmailVerification from "@/lib/email/templates/email-verification";
 import { assertRateLimited } from "@/lib/assert-rate-limited";
 
 export const userRouter = router({
   me: publicProcedure.query(async (opts) => {
     return { user: opts.ctx.user ?? null };
   }),
+  sendEmailVerificationCode: protectedProcedure
+    .meta({ rateLimitType: "email", skipEmailVerificationCheck: true })
+    .mutation(async ({ ctx }) => {
+      if (ctx.user.verifiedAt) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Email already verified" });
+      }
+      const { code: verificationCode } = await User.createVerificationCode({
+        email: ctx.user.email,
+        userId: ctx.user.id,
+      });
+      await sendMail({
+        to: ctx.user.email,
+        subject: "Verify Your Placeholder Account",
+        from: "Tom at Placeholder <welcome@tombruce.au>",
+        react: EmailVerification({ email: ctx.user.email, verificationCode }),
+      });
+    }),
+  verifyEmail: protectedProcedure
+    .meta({ rateLimitType: "auth", skipEmailVerificationCheck: true })
+    .input(verifyEmailSchema)
+    .mutation(async ({ ctx, input }) => {
+      const result = await User.confirmVerificationCode({
+        code: input.code,
+        userId: ctx.user.id,
+        email: ctx.user.email,
+      });
+
+      if (!result._ok) {
+        // TODO decide on more granular error messages
+        if (result.error.code === "CodeExpired") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: VERIFY_EMAIL_ERRORS.CODE_EXPIRED });
+        } else if (result.error.code === "CodeMismatch") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: VERIFY_EMAIL_ERRORS.INVALID_CODE });
+        } else if (result.error.code === "CodeNotFound") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: VERIFY_EMAIL_ERRORS.INVALID_CODE });
+        } else if (result.error.code === "EmailMismatch") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: VERIFY_EMAIL_ERRORS.INVALID_CODE });
+        } else {
+          assertNever(result.error);
+        }
+      }
+      const session = await lucia.createSession(
+        ctx.user.id,
+        // @ts-expect-error
+        {},
+        { sessionId: generateId("session") }
+      );
+      const sessionCookie = lucia.createSessionCookie(session.id);
+      ctx.res.appendHeader("Set-Cookie", sessionCookie.serialize());
+      return;
+    }),
   signUp: publicProcedure.input(signUpSchema).mutation(async ({ input, ctx }) => {
     await assertRateLimited({ limitType: "auth", identifier: ctx.clientIp });
 
@@ -49,11 +101,15 @@ export const userRouter = router({
       }
     }
     const user = createResult.value;
+    const { code: verificationCode } = await User.createVerificationCode({
+      email: input.email,
+      userId: user.id,
+    });
     await sendMail({
       to: input.email,
-      subject: "Welcome to Placeholder",
+      subject: "Verify Your Placeholder Account",
       from: "Tom at Placeholder <welcome@tombruce.au>",
-      react: Welcome({ email: input.email }),
+      react: EmailVerification({ email: input.email, verificationCode }),
     });
     //@ts-expect-error
     const session = await lucia.createSession(user.id, {}, { sessionId: generateId("session") });
@@ -61,6 +117,7 @@ export const userRouter = router({
     ctx.res.appendHeader("Set-Cookie", sessionCookie.serialize());
     return;
   }),
+
   signIn: publicProcedure.input(signInSchema).mutation(async ({ input, ctx }) => {
     await assertRateLimited({ limitType: "auth", identifier: input.email });
 

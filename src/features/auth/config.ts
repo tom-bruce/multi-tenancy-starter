@@ -8,6 +8,8 @@ export const SIGN_UP_ERRORS = {
 
 export const VERIFY_RESET_TOKEN_URL = "/auth/reset-password";
 
+export const VERIFY_EMAIL_URL = "/auth/verify-email";
+
 export const SIGN_IN_ERRORS = {
   INVALID_CREDENTIALS: "Invalid email or password",
   USER_LINKED_WITH_ANOTHER_ACCOUNT:
@@ -21,4 +23,9 @@ export const RESET_TOKEN_ERRORS = {
 
 export const TRIGGER_RESET_ERRORS = {
   EMAIL_NOT_FOUND: "An account doesn't exist with this email",
+};
+
+export const VERIFY_EMAIL_ERRORS = {
+  CODE_EXPIRED: "Your verification code has expired. Please request a new one and try again.",
+  INVALID_CODE: "Incorrect code, please double check your code and try again.",
 };

@@ -9,6 +9,7 @@ import { RateLimitType, rateLimiter } from "@/lib/rate-limiter";
 
 interface Metadata {
   rateLimitType: RateLimitType;
+  skipEmailVerificationCheck?: boolean;
 }
 /**
  * Initialization of tRPC backend
@@ -18,10 +19,15 @@ const t = initTRPC
   .context<Context>()
   .meta<Metadata>()
   .create({
-    defaultMeta: { rateLimitType: "core" },
+    defaultMeta: { rateLimitType: "core", skipEmailVerificationCheck: false },
     transformer: superjson,
-    errorFormatter({ shape, error }) {
+    errorFormatter({ shape, error, ctx }) {
       return {
+        ratelimit: {
+          limit: ctx?.res.getHeader("X-RateLimit-Limit"),
+          remaining: ctx?.res.getHeader("X-RateLimit-Remaining"),
+          reset: ctx?.res.getHeader("X-RateLimit-Reset"),
+        },
         ...shape,
         data: {
           ...shape.data,
@@ -39,12 +45,18 @@ export const router = t.router;
 export const publicProcedure = t.procedure;
 export const createCallerFactory = t.createCallerFactory;
 
-const isAuthenticatedMiddleware = t.middleware(({ ctx, next }) => {
+const isAuthenticatedMiddleware = t.middleware(({ ctx, next, meta }) => {
   if (!ctx.user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   if (!ctx.session) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  if (!meta?.skipEmailVerificationCheck && !ctx.user.verifiedAt) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Please verify your email to access the API",
+    });
   }
   return next({
     ctx: {
@@ -61,11 +73,13 @@ const isAuthenticatedRatelimitMiddleware = isAuthenticatedMiddleware.unstable_pi
     identifier: opts.ctx.user.id,
   });
 
+  opts.ctx.res.setHeader("X-RateLimit-Limit", limitResult.limit);
+  opts.ctx.res.setHeader("X-RateLimit-Remaining", limitResult.remaining);
+  opts.ctx.res.setHeader("X-RateLimit-Reset", limitResult.reset);
+
   if (!limitResult.success) {
     throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
   }
-  opts.ctx.res.setHeader("X-RateLimit-Limit", limitResult.limit);
-  opts.ctx.res.setHeader("X-RateLimit-Remaining", limitResult.remaining);
 
   return opts.next();
 });

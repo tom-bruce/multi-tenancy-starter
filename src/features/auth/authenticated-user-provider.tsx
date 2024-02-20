@@ -1,7 +1,7 @@
 import { RouterOutput, trpc } from "@/lib/trpc/next-client";
 import { useRouter } from "next/router";
-import { ReactNode, createContext, useContext, useEffect } from "react";
-import { SIGN_IN_URL } from "./config";
+import { ReactNode, createContext, use, useContext, useEffect } from "react";
+import { SIGN_IN_URL, VERIFY_EMAIL_URL } from "./config";
 import { getBaseUrl } from "@/lib/utils";
 
 type AuthUser = NonNullable<RouterOutput["user"]["me"]["user"]>;
@@ -29,16 +29,43 @@ export const AuthenticatedProvider = ({ children }: { children: ReactNode }) => 
       router.push(url);
     }
   }, [auth.user, router]);
+
   if (auth.user === null) {
     // TODO this should probably show either an error screen or redirect to login. The purpose of this provider is to allow for the more strictly typed useAuthenticatedUser hook
     return null;
   }
   return (
     <authenticatedAuthContext.Provider value={{ user: auth.user }}>
-      {children}
+      <VerifiedEmailGuard>{children}</VerifiedEmailGuard>
     </authenticatedAuthContext.Provider>
   );
 };
+
+function VerifiedEmailGuard({ children }: { children: ReactNode }) {
+  const { user } = useAuthenticatedUser();
+  const router = useRouter();
+  const isVerifiedPage = router.pathname === VERIFY_EMAIL_URL;
+  const shouldRedirect = !isVerifiedPage && !user.verifiedAt;
+  useEffect(() => {
+    if (shouldRedirect) {
+      const url = new URL(VERIFY_EMAIL_URL, window.location.origin);
+      url.searchParams.set("returnUrl", router.asPath);
+      router.push(url);
+    }
+    if (isVerifiedPage && user.verifiedAt) {
+      const returnUrl = router.query.returnUrl;
+      if (typeof returnUrl === "string") {
+        router.push(returnUrl);
+      } else {
+        router.push("/");
+      }
+    }
+  }, [isVerifiedPage, router, shouldRedirect, user.verifiedAt]);
+  if (shouldRedirect) {
+    return null;
+  }
+  return children;
+}
 
 export const AuthenticationProvider = ({ children }: { children: ReactNode }) => {
   const query = trpc.user.me.useQuery(undefined, { retry: false });
@@ -49,11 +76,13 @@ export const AuthenticationProvider = ({ children }: { children: ReactNode }) =>
   if (query.isError) {
     return <div>An error occured</div>;
   }
+
   if (!query.data) {
     // TODO this shouldn't happen - this seems to be an issue with the useQuery typings
     console.error("An error occurred loading user profile.");
     return null;
   }
+
   return <authContext.Provider value={query.data}>{children}</authContext.Provider>;
 };
 

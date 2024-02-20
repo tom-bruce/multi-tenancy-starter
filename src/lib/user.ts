@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "./db";
 import { users } from "./db/schema/users";
 import { generateId } from "lucia";
@@ -8,6 +8,9 @@ import { result } from "./result";
 import { CodedError } from "./error";
 import { DatabaseError, NeonDbError } from "@neondatabase/serverless";
 import { sessions } from "./db/schema/sessions";
+import { emailVerificationCodes } from "./db/schema/email-verification-codes";
+import { generateRandomString, alphabet } from "oslo/crypto";
+import { lucia } from "./auth";
 export * as User from "./user";
 
 export async function create({ email, hashedPassword }: { email: string; hashedPassword: string }) {
@@ -94,4 +97,62 @@ export async function changePasswordWithResetToken({
 export async function activeSessions({ userId }: { userId: string }) {
   // This would become more useful if we included information like last used, user agent, IP address etc
   return db.select({ id: sessions.id }).from(sessions).where(eq(sessions.userId, userId)).execute();
+}
+
+export async function createVerificationCode({ userId, email }: { userId: string; email: string }) {
+  await db
+    .delete(emailVerificationCodes)
+    .where(eq(emailVerificationCodes.userId, userId))
+    .execute();
+  const code = generateRandomString(8, alphabet("0-9"));
+  await db
+    .insert(emailVerificationCodes)
+    .values({ code, email, userId, expiresAt: createDate(new TimeSpan(5, "m")) })
+    .execute();
+  return { code };
+}
+
+export async function confirmVerificationCode({
+  code,
+  userId,
+  email,
+}: {
+  code: string;
+  userId: string;
+  email: string;
+}) {
+  // TODO this should be in a db transaction
+  const dbCode = await db
+    .select()
+    .from(emailVerificationCodes)
+    .where(eq(emailVerificationCodes.userId, userId))
+    .execute()
+    .then((r) => r[0]);
+
+  if (!dbCode) {
+    return result.fail(new CodedError("CodeNotFound"));
+  }
+
+  if (dbCode.email !== email) {
+    return result.fail(new CodedError("EmailMismatch"));
+  }
+
+  if (dbCode.code !== code) {
+    return result.fail(new CodedError("CodeMismatch"));
+  }
+
+  if (!isWithinExpirationDate(dbCode.expiresAt)) {
+    return result.fail(new CodedError("CodeExpired"));
+  }
+
+  await lucia.invalidateUserSessions(userId);
+
+  await db
+    .delete(emailVerificationCodes)
+    .where(and(eq(emailVerificationCodes.userId, userId), eq(emailVerificationCodes.email, email)))
+    .execute();
+
+  await db.update(users).set({ verifiedAt: new Date() }).where(eq(users.id, userId)).execute();
+
+  return result.success(true);
 }

@@ -1,7 +1,7 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { redis } from "./redis";
 
-export type RateLimitType = "core" | "auth" | "common";
+export type RateLimitType = "core" | "auth" | "common" | "email";
 export function rateLimiter() {
   const limiters: Record<RateLimitType, Ratelimit> = {
     core: new Ratelimit({
@@ -20,6 +20,12 @@ export function rateLimiter() {
       redis,
       prefix: "ratelimit:auth",
       limiter: Ratelimit.fixedWindow(5, "60s"),
+      analytics: true,
+    }),
+    email: new Ratelimit({
+      redis,
+      prefix: "ratelimit:email",
+      limiter: Ratelimit.fixedWindow(1, "5m"),
       analytics: true,
     }),
   };

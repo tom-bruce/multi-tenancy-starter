@@ -36,6 +36,13 @@
       "when": 1707819412110,
       "tag": "0004_glamorous_wraith",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1708316213590,
+      "tag": "0005_petite_swordsman",
+      "breakpoints": true
     }
   ]
 }

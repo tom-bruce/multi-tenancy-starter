@@ -12,6 +12,7 @@ export const lucia = new Lucia(adapter, {
   getUserAttributes(databaseUserAttributes) {
     return {
       email: databaseUserAttributes.email,
+      verifiedAt: databaseUserAttributes.verifiedAt,
     };
   },
   sessionCookie: {
