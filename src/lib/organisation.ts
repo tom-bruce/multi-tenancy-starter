@@ -176,6 +176,7 @@ export async function createInvite({
 export async function listPendingInvites({ orgId }: { orgId: string }) {
   return db
     .select({
+      id: organisationInvites.id,
       email: organisationInvites.email,
       expiresAt: organisationInvites.expiresAt,
       invitedAt: organisationInvites.invitedAt,
@@ -266,6 +267,25 @@ export async function acceptInvitation({
     .where(eq(organisationInvites.token, inviteToken));
 
   return result.success(true);
+}
+
+export async function revokeInvite({ inviteId, orgId }: { inviteId: string; orgId: string }) {
+  // TODO should check that the invite is still valid otherwise there isn't really a point in deleting
+  const result = await db
+    .delete(organisationInvites)
+    .where(and(eq(organisationInvites.id, inviteId), eq(organisationInvites.organisationId, orgId)))
+    .returning({ id: organisationInvites.id })
+    .execute();
+  return result.length > 0;
+}
+
+export async function removeMember({ orgId, memberId }: { orgId: string; memberId: string }) {
+  const result = await db
+    .delete(members)
+    .where(and(eq(members.id, memberId), eq(members.organisationId, orgId)))
+    .returning({ id: members.id })
+    .execute();
+  return result.length > 0;
 }
 
 export async function listMembers({ orgId }: { orgId: string }) {

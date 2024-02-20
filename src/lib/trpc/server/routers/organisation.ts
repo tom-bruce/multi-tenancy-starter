@@ -2,6 +2,8 @@ import {
   baseOrgInputSchema,
   createOrganisationSchema,
   inviteSchema,
+  removeMemberSchema,
+  revokeInviteSchema,
 } from "@/features/organisation/schemas";
 import { organisationProcedure, protectedProcedure, roleProtectedProcedure, router } from "../trpc";
 import { Organisation } from "@/lib/organisation";
@@ -29,6 +31,21 @@ export const organisationRouter = router({
   members: organisationProcedure.input(baseOrgInputSchema).query(async ({ input, ctx }) => {
     return Organisation.listMembers({ orgId: ctx.organisation.id });
   }),
+  removeMember: roleProtectedProcedure("admin")
+    .input(removeMemberSchema)
+    .mutation(async ({ ctx, input }) => {
+      const removed = await Organisation.removeMember({
+        orgId: ctx.organisation.id,
+        memberId: input.memberId,
+      });
+      if (!removed) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Unable to remove member ${input.memberId} from organisation ${ctx.organisation.id}`,
+        });
+      }
+      return;
+    }),
   acceptInvite: protectedProcedure
     .meta({ rateLimitType: "auth" })
     .input(z.object({ inviteToken: z.string().min(1) }))
@@ -105,8 +122,20 @@ export const organisationRouter = router({
       return inviteDetails;
     }),
   revokeInvite: roleProtectedProcedure("admin")
-    .input(baseOrgInputSchema)
-    .mutation(async ({ ctx }) => {}),
+    .input(revokeInviteSchema)
+    .mutation(async ({ ctx, input }) => {
+      const deleted = await Organisation.revokeInvite({
+        inviteId: input.inviteId,
+        orgId: ctx.organisation.id,
+      });
+      if (!deleted) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Unable to delete invite ${input.inviteId} within organisation ${input.inviteId}`,
+        });
+      }
+      return;
+    }),
   invites: roleProtectedProcedure("admin")
     .input(baseOrgInputSchema)
     .query(async ({ ctx }) => {
