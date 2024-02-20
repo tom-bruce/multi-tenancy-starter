@@ -17,8 +17,8 @@ TODO
 - [x] Implement CSRF protection
 - [x] Setup rate limiting
 - [x] Add passing the return url params to the signup page
-- [ ] Revoke organisation invites (admin)
-- [ ] Remove members from organisations (admin)
+- [x] Revoke organisation invites (admin)
+- [x] Remove members from organisations (admin)
 - [ ] Invite with role
 - [ ] Proper styling of UI
 - [ ] Let a user view and delete their active sessions (ie sign out another machine)

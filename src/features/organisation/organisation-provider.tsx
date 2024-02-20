@@ -6,7 +6,7 @@ import { useOrganisationSlug } from "./use-organisation-slug";
 
 type OrganisationContext = RouterOutput["organisation"]["bySlug"];
 
-const organisationContext = createContext<OrganisationContext>({} as OrganisationContext);
+const organisationContext = createContext<OrganisationContext | null>(null);
 
 export function OrganisationProvider({ children }: { children: React.ReactNode }) {
   const orgSlug = useOrganisationSlug();
