@@ -1,8 +1,8 @@
 import { RouterOutput, trpc } from "@/lib/trpc/next-client";
 import { useRouter } from "next/router";
-import { ReactNode, createContext, use, useContext, useEffect } from "react";
+import { ReactNode, createContext, useContext, useEffect } from "react";
 import { SIGN_IN_URL, VERIFY_EMAIL_URL } from "./config";
-import { getBaseUrl } from "@/lib/utils";
+import { PageLoader } from "@/components/page-loader";
 
 type AuthUser = NonNullable<RouterOutput["user"]["me"]["user"]>;
 
@@ -71,7 +71,7 @@ export const AuthenticationProvider = ({ children }: { children: ReactNode }) =>
   const query = trpc.user.me.useQuery(undefined, { retry: false });
 
   if (query.isLoading) {
-    return <div>Performing Auth Check...</div>;
+    return <PageLoader />;
   }
   if (query.isError) {
     return <div>An error occured</div>;

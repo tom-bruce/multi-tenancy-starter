@@ -3,6 +3,7 @@ import { createContext, useContext } from "react";
 import { ForbiddenErrorScreen } from "../errors/forbidden-error-screen";
 import { UnknownErrorScreen } from "../errors/unknown-error-screen";
 import { useOrganisationSlug } from "./use-organisation-slug";
+import { PageLoader } from "@/components/page-loader";
 
 type OrganisationContext = RouterOutput["organisation"]["bySlug"];
 
@@ -18,7 +19,7 @@ export function OrganisationProvider({ children }: { children: React.ReactNode }
     return <UnknownErrorScreen />;
   }
   if (orgQuery.isLoading) {
-    return <p>Performing org check</p>;
+    return <PageLoader />;
   }
   if (!orgQuery.data) {
     return <UnknownErrorScreen />;
