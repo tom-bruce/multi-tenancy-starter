@@ -40,15 +40,16 @@ export function ResetPasswordWithTokenForm({ token }: { token: string }) {
   );
   return (
     <Form {...form}>
-      <form className="space-y-4" onSubmit={onSubmit}>
+      <form className="space-y-2" onSubmit={onSubmit}>
         <FormField
           control={form.control}
           name="newPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>New Password</FormLabel>
+              <FormLabel className="sr-only">New Password</FormLabel>
               <FormControl>
                 <Input
+                  placeholder="Your New Password"
                   disabled={setPasswordMutation.isPending || setPasswordMutation.isSuccess}
                   type="password"
                   {...field}
@@ -59,7 +60,11 @@ export function ResetPasswordWithTokenForm({ token }: { token: string }) {
           )}
         />
         <FormRootMessage />
-        <Button disabled={setPasswordMutation.isSuccess} isLoading={setPasswordMutation.isPending}>
+        <Button
+          className="w-full"
+          disabled={setPasswordMutation.isSuccess}
+          isLoading={setPasswordMutation.isPending}
+        >
           Set Password
         </Button>
       </form>
