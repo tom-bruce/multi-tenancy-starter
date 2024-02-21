@@ -14,12 +14,26 @@ export default function SignUpPage() {
     }
   }, [user, router]);
   return (
-    <main>
-      <h1>Sign In</h1>
-      <SignInForm />
-      <Link href={{ pathname: SIGN_UP_URL, query: { returnUrl: router.query.returnUrl } }}>
-        Sign Up
-      </Link>
+    <main className="h-screen flex justify-center items-center flex-col">
+      <div className="container mx-auto space-y-2 max-w-lg">
+        <h1 className="text-3xl font-semibold tracking-tight text-center">
+          Sign In to Placeholder
+        </h1>
+        <p className="text-muted-foreground text-center">Enter your email and password below</p>
+        <SignInForm />
+        <p className="text-muted-foreground">
+          Don&apos;t have an account?{" "}
+          <Link
+            className="font-semibold hover:underline"
+            href={{
+              pathname: SIGN_UP_URL,
+              query: router.query.returnUrl ? { returnUrl: router.query.returnUrl } : undefined,
+            }}
+          >
+            Sign Up
+          </Link>
+        </p>
+      </div>
     </main>
   );
 }

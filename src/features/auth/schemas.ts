@@ -1,19 +1,19 @@
 import { z } from "zod";
 
 export const signUpSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
+  email: z.string().email({ message: "Please enter a valid email" }),
+  password: z.string().min(1, { message: "Please enter a password" }),
 });
 
 export const signInSchema = signUpSchema;
 
 export const resetPasswordSchema = z.object({
-  email: z.string().email(),
+  email: z.string().email({ message: "Please enter a valid email" }),
 });
 
 export const verifyResetTokenSchema = z.object({
-  token: z.string(),
-  newPassword: z.string().min(1),
+  token: z.string().min(1, { message: "Please enter the token that was sent to your email" }),
+  newPassword: z.string().min(1, { message: "Please enter a new password" }),
 });
 
 export const verifyEmailSchema = z.object({

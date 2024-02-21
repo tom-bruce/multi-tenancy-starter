@@ -52,15 +52,15 @@ export function SignUpForm() {
 
   return (
     <Form {...form}>
-      <form className="max-w-2xl mx-auto space-y-4" onSubmit={onSubmit}>
+      <form className="space-y-3" onSubmit={onSubmit}>
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel className="sr-only">Email</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="your.email@example.com" {...field} />
+                <Input autoFocus type="email" placeholder="your.email@example.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -71,16 +71,23 @@ export function SignUpForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel className="sr-only">Password</FormLabel>
               <FormControl>
-                <Input type="password" {...field} />
+                <Input placeholder="Your Password" type="password" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
         <FormRootMessage />
-        <Button type="submit">Sign up</Button>
+        <Button
+          disabled={signUpMutation.isSuccess}
+          isLoading={signUpMutation.isPending}
+          className="w-full"
+          type="submit"
+        >
+          Sign up
+        </Button>
       </form>
     </Form>
   );
