@@ -14,20 +14,29 @@ import { trpc } from "@/lib/trpc/next-client";
 import { useRouter } from "next/router";
 import { signUpSchema } from "./schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import { SIGN_IN_ERRORS } from "./config";
+import { SIGN_IN_ERRORS, VERIFY_EMAIL_URL } from "./config";
 import { isRateLimited } from "./is-rate-limited";
 
 export function SignInForm() {
   const router = useRouter();
   const qc = useQueryClient();
   const signInMutation = trpc.user.signIn.useMutation({
-    onSuccess: () => {
+    onSuccess: ({ isEmailVerified }) => {
       qc.removeQueries();
       const returnUrl = router.query.returnUrl;
-      if (typeof returnUrl === "string") {
-        router.push(returnUrl);
+
+      if (!isEmailVerified) {
+        const url = new URL(VERIFY_EMAIL_URL, window.location.origin);
+        if (typeof returnUrl === "string") {
+          url.searchParams.set("returnUrl", returnUrl);
+        }
+        router.push(url);
       } else {
-        router.push("/");
+        const url = new URL(
+          typeof returnUrl === "string" ? returnUrl : "/",
+          window.location.origin
+        );
+        router.push(url);
       }
     },
     onError: (error) => {

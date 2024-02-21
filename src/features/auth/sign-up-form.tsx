@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { SIGN_UP_ERRORS } from "./config";
+import { SIGN_UP_ERRORS, VERIFY_EMAIL_URL } from "./config";
 import { useQueryClient } from "@tanstack/react-query";
 import { isRateLimited } from "./is-rate-limited";
 
@@ -25,11 +25,11 @@ export function SignUpForm() {
     onSuccess: () => {
       qc.removeQueries();
       const returnUrl = router.query.returnUrl;
+      const url = new URL(VERIFY_EMAIL_URL, window.location.origin);
       if (typeof returnUrl === "string") {
-        router.push(returnUrl);
-      } else {
-        router.push("/");
+        url.searchParams.set("returnUrl", returnUrl);
       }
+      router.push(url);
     },
     onError: (error) => {
       if (isRateLimited(error)) {

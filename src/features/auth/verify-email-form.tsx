@@ -15,13 +15,22 @@ import { Button } from "@/components/ui/button";
 import { isRateLimited } from "./is-rate-limited";
 import { VERIFY_EMAIL_ERRORS } from "./config";
 import { z } from "zod";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/router";
 
 export function VerifyEmailForm() {
-  const utils = trpc.useUtils();
+  const qc = useQueryClient();
+  const router = useRouter();
   const form = useZodForm(verifyEmailSchema, { defaultValues: { code: "" } });
   const verifyMutation = trpc.user.verifyEmail.useMutation({
     onSuccess() {
-      utils.invalidate();
+      qc.removeQueries();
+      const returnUrl = router.query.returnUrl;
+      if (typeof returnUrl === "string") {
+        router.push(returnUrl);
+      } else {
+        router.push("/");
+      }
     },
     onError(e) {
       if (isRateLimited(e)) {

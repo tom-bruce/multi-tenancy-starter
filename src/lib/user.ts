@@ -35,7 +35,12 @@ export async function create({ email, hashedPassword }: { email: string; hashedP
 
 export async function byEmail(email: string) {
   return db
-    .select({ id: users.id, email: users.email, hashedPassword: users.hashedPassword })
+    .select({
+      id: users.id,
+      email: users.email,
+      hashedPassword: users.hashedPassword,
+      verifiedAt: users.verifiedAt,
+    })
     .from(users)
     .where(eq(users.email, email))
     .execute()

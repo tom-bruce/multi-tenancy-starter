@@ -152,7 +152,9 @@ export const userRouter = router({
 
     const sessionCookie = lucia.createSessionCookie(session.id);
     ctx.res.appendHeader("Set-Cookie", sessionCookie.serialize());
-    return;
+    return {
+      isEmailVerified: !!maybeUser.verifiedAt,
+    };
   }),
   signOut: publicProcedure.mutation(async ({ ctx }) => {
     if (!ctx.session) {
