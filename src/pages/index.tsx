@@ -3,6 +3,7 @@ import { SignOutButton } from "@/features/auth/sign-out-button";
 import { useUser } from "@/features/auth/authenticated-user-provider";
 import Link from "next/link";
 import { SIGN_IN_URL } from "@/features/auth/config";
+import { OrganisationSelector } from "@/features/organisation/organisation-selector";
 
 function Profile() {
   const { user } = useUser();

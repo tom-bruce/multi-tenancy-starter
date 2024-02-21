@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import { db } from "./db";
 import { members } from "./db/schema/members";
 import { organisations } from "./db/schema/organisations";
@@ -59,9 +59,9 @@ export async function byUserId({ userId }: { userId: string }) {
     .from(members)
     .innerJoin(organisations, eq(members.organisationId, organisations.id))
     .where(eq(members.userId, userId))
+    .orderBy(asc(organisations.name))
     .execute();
   return orgList;
-  // .then((result) => result.map((row) => row.organisationId));
 }
 
 export async function bySlug({ slug }: { slug: string }) {
