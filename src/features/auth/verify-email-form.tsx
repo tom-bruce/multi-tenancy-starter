@@ -4,6 +4,7 @@ import { trpc } from "@/lib/trpc/next-client";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -51,20 +52,22 @@ export function VerifyEmailForm() {
   });
   return (
     <Form {...form}>
-      <form className="max-w-2xl mx-auto space-y-4" onSubmit={onSubmit}>
+      <form className="space-y-4" onSubmit={onSubmit}>
         <FormField
           control={form.control}
           name="code"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Code</FormLabel>
+              <FormLabel className="sr-only">Code</FormLabel>
               <FormControl>
                 <Input
                   disabled={verifyMutation.isPending || verifyMutation.isSuccess}
                   type="text"
+                  placeholder="Code from your Email"
                   {...field}
                 />
               </FormControl>
+              <FormDescription>Do not share this code with anyone</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -74,6 +77,7 @@ export function VerifyEmailForm() {
           isLoading={verifyMutation.isPending}
           disabled={verifyMutation.isSuccess}
           type="submit"
+          className="w-full"
         >
           Verify Email
         </Button>
@@ -119,10 +123,10 @@ function ResendVerificationEmail() {
   }
   return (
     <Form {...form}>
-      <form className="max-w-2xl mx-auto space-y-4" onSubmit={onSubmit}>
-        <p>
-          Didn&apos;t recieve a code?
-          <Button isLoading={resendMutation.isPending} variant="link" type="submit">
+      <form className="max-w-2xl mx-auto" onSubmit={onSubmit}>
+        <p className="text-muted-foreground flex items-center gap-2">
+          Didn&apos;t recieve a code?{" "}
+          <Button className="p-0" isLoading={resendMutation.isPending} variant="link" type="submit">
             Resend Verification Email
           </Button>
         </p>
