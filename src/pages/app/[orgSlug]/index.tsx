@@ -1,22 +1,17 @@
-import { AuthenticatedProvider } from "@/features/auth/authenticated-user-provider";
 import { MembersList } from "@/features/organisation/members-list";
 import { OrganisationInviteForm } from "@/features/organisation/organisation-invite-form";
 import { OrganisationInviteList } from "@/features/organisation/organisation-invite-list";
-import {
-  OrganisationProvider,
-  useOrganisation,
-} from "@/features/organisation/organisation-provider";
+import { OrganisationLayout } from "@/features/organisation/organisation-layout";
+import { useOrganisation } from "@/features/organisation/organisation-provider";
 import { OrganisationSelector } from "@/features/organisation/organisation-selector";
 import { Protect } from "@/features/organisation/protect";
 import { Suspense } from "react";
 
 export default function OrganisationHomePage() {
   return (
-    <AuthenticatedProvider>
-      <OrganisationProvider>
-        <PageInner />
-      </OrganisationProvider>
-    </AuthenticatedProvider>
+    <OrganisationLayout>
+      <PageInner />
+    </OrganisationLayout>
   );
 }
 
@@ -29,9 +24,6 @@ function PageInner() {
       <OrganisationSelector />
 
       <MembersList />
-      {/* <Suspense>
-        <OrganisationList />
-      </Suspense> */}
       <Protect role="admin" fallback={<p>Only admins can manage organisation memberships.</p>}>
         <div className="mx-auto max-w-2xl">
           <OrganisationInviteForm />
