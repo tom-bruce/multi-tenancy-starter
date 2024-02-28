@@ -41,6 +41,7 @@ function NavLinks() {
   );
 }
 export function OrganisationLayout({ children }: { children: ReactNode }) {
+  // TODO prevent the cascade of providers - make the user & org request parallel
   return (
     <AuthenticatedProvider>
       <OrganisationProvider>
