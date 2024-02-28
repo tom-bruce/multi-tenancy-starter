@@ -12,15 +12,30 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { sendMail } from "@/lib/email/send-mail";
 import OrganisationInvite from "@/lib/email/templates/organisation-invite";
-import { INVITE_ERRORS, ORGANISATION_INVITE_URL } from "@/features/organisation/config";
+import {
+  CREATE_ORGANISATION_ERRORS,
+  INVITE_ERRORS,
+  ORGANISATION_INVITE_URL,
+} from "@/features/organisation/config";
 
 export const organisationRouter = router({
   create: protectedProcedure.input(createOrganisationSchema).mutation(async (opts) => {
-    return Organisation.create({
+    const createResult = await Organisation.create({
       name: opts.input.name,
       slug: sluggify(opts.input.name),
       ownerId: opts.ctx.user.id,
     });
+    if (!createResult._ok) {
+      if (createResult.error.code === "OrganisationAlreadyExists") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: CREATE_ORGANISATION_ERRORS.ORGANISATION_ALREADY_EXISTS,
+        });
+      } else {
+        assertNever(createResult.error.code);
+      }
+    }
+    return createResult.value;
   }),
   list: protectedProcedure.query(async (opts) => {
     return Organisation.byUserId({ userId: opts.ctx.user.id });

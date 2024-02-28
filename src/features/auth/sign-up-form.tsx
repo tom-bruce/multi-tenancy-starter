@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SIGN_UP_ERRORS, VERIFY_EMAIL_URL } from "./config";
 import { useQueryClient } from "@tanstack/react-query";
-import { isRateLimited } from "./is-rate-limited";
+import { isRateLimited } from "../errors/is-rate-limited";
 
 export function SignUpForm() {
   const router = useRouter();

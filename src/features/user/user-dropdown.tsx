@@ -12,10 +12,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuthenticatedUser } from "../auth/authenticated-user-provider";
 import { useSignOut } from "../auth/use-sign-out";
+import Link from "next/link";
 
 export function UserDropdown() {
   const { user } = useAuthenticatedUser();
-  const useSignOutMutation = useSignOut();
+  const signOutMutation = useSignOut();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -47,10 +48,12 @@ export function UserDropdown() {
             Settings
             <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
           </DropdownMenuItem>
-          <DropdownMenuItem>New Team</DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/new">New Organisation</Link>
+          </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-destructive">
+        <DropdownMenuItem onClick={() => signOutMutation.mutate()} className="text-destructive">
           Sign Out
           <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
         </DropdownMenuItem>

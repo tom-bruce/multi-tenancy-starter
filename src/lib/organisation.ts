@@ -1,5 +1,5 @@
-import { and, asc, desc, eq } from "drizzle-orm";
-import { db } from "./db";
+import { and, asc, eq } from "drizzle-orm";
+import { db, isIntegrityViolation } from "./db";
 import { members } from "./db/schema/members";
 import { organisations } from "./db/schema/organisations";
 import { organisationInvites } from "./db/schema/organisation-invites";
@@ -22,12 +22,20 @@ export async function create({
   ownerId: string;
 }) {
   // return db.transaction(async (tx) => {
-  const newOrg = await db
-    .insert(organisations)
-    .values({ name, slug })
-    .returning({ id: organisations.id })
-    .execute()
-    .then((result) => result[0]);
+  let newOrg: { id: string } | null = null;
+  try {
+    newOrg = await db
+      .insert(organisations)
+      .values({ name, slug })
+      .returning({ id: organisations.id })
+      .execute()
+      .then((result) => result[0] ?? null);
+  } catch (e) {
+    if (isIntegrityViolation(e)) {
+      return result.fail(new CodedError("OrganisationAlreadyExists"));
+    }
+    throw e;
+  }
 
   if (!newOrg) {
     throw new Error("Error creating organisation");
@@ -43,7 +51,7 @@ export async function create({
     throw new Error("Error creating organisation owner");
   }
 
-  return { orgId: newOrg.id, memberId, slug };
+  return result.success({ orgId: newOrg.id, memberId, slug });
   // });
 }
 

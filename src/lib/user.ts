@@ -1,12 +1,11 @@
 import { and, eq } from "drizzle-orm";
-import { db } from "./db";
+import { db, isIntegrityViolation } from "./db";
 import { users } from "./db/schema/users";
 import { generateId } from "lucia";
 import { passwordResetTokens } from "./db/schema/password-reset-tokens";
 import { createDate, TimeSpan, isWithinExpirationDate } from "oslo";
 import { result } from "./result";
 import { CodedError } from "./error";
-import { DatabaseError, NeonDbError } from "@neondatabase/serverless";
 import { sessions } from "./db/schema/sessions";
 import { emailVerificationCodes } from "./db/schema/email-verification-codes";
 import { generateRandomString, alphabet } from "oslo/crypto";
@@ -24,10 +23,8 @@ export async function create({ email, hashedPassword }: { email: string; hashedP
     if (!newUser) throw new Error("Unknown Error");
     return result.success(newUser);
   } catch (e) {
-    if (e instanceof NeonDbError) {
-      if (e.code === "23505" && e.message.includes("users_email_unique")) {
-        return result.fail(new CodedError("UserAlreadyExists"));
-      }
+    if (isIntegrityViolation(e)) {
+      return result.fail(new CodedError("UserAlreadyExists"));
     }
     throw e;
   }

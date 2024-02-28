@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 export const createOrganisationSchema = z.object({
-  name: z.string().min(1),
+  name: z
+    .string()
+    .min(1)
+    .transform((v) => v.trim()),
 });
 
 export const baseOrgInputSchema = z.object({ orgSlug: z.string() });

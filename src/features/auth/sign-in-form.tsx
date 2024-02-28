@@ -15,7 +15,7 @@ import { useRouter } from "next/router";
 import { signUpSchema } from "./schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { SIGN_IN_ERRORS, VERIFY_EMAIL_URL } from "./config";
-import { isRateLimited } from "./is-rate-limited";
+import { isRateLimited } from "../errors/is-rate-limited";
 
 export function SignInForm() {
   const router = useRouter();

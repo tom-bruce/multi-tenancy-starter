@@ -8,6 +8,8 @@ import { useOrganisationSlug } from "./use-organisation-slug";
 
 const ORG_RESOURCES = {
   overview: "/",
+  dashboard: "/dashboard",
+  settings: "/settings",
 };
 function orgLink(slug: string, resource: keyof typeof ORG_RESOURCES) {
   return `/app/${slug}${ORG_RESOURCES[resource]}`;
@@ -24,13 +26,13 @@ function NavLinks() {
         Overview
       </Link>
       <Link
-        href={orgLink(orgSlug, "overview")}
+        href={orgLink(orgSlug, "dashboard")}
         className="text-sm font-medium transition-colors hover:text-primary"
       >
         Dashboard
       </Link>
       <Link
-        href={orgLink(orgSlug, "overview")}
+        href={orgLink(orgSlug, "settings")}
         className="text-sm font-medium transition-colors hover:text-primary"
       >
         Settings

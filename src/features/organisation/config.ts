@@ -3,4 +3,8 @@ export const INVITE_ERRORS = {
   INVITE_ALREADY_EXISTS: "The user already has a pending invite to join the organisation",
 };
 
+export const CREATE_ORGANISATION_ERRORS = {
+  ORGANISATION_ALREADY_EXISTS: "Organisation with this name already exists",
+};
+
 export const ORGANISATION_INVITE_URL = "/auth/invite";

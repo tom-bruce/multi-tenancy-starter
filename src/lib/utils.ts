@@ -1,5 +1,5 @@
-import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 import { z } from "zod";
 
 export function parseFormData<S extends z.ZodObject<any>>(
@@ -23,13 +23,14 @@ export function assertNever(value: never): never {
 
 export function sluggify(input: string): string {
   return input
+    .trim()
     .toLowerCase()
     .replace(/ /g, "-")
     .replace(/[^a-z0-9-]/g, "");
 }
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 export function getBaseUrl() {
