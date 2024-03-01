@@ -1,11 +1,19 @@
 import { useUser } from "@/features/auth/authenticated-user-provider";
 import { SIGN_UP_URL } from "@/features/auth/config";
+import { DefaultLayout } from "@/features/auth/default-layout";
 import { SignInForm } from "@/features/auth/sign-in-form";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
 export default function SignUpPage() {
+  return (
+    <DefaultLayout>
+      <SignUpPageInner />
+    </DefaultLayout>
+  );
+}
+function SignUpPageInner() {
   const router = useRouter();
   const { user } = useUser();
   useEffect(() => {

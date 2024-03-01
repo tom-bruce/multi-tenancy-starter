@@ -1,11 +1,11 @@
-import { AuthenticatedProvider } from "@/features/auth/authenticated-user-provider";
+import { AuthenticatedLayout } from "@/features/auth/authenticated-layout";
 import { VerifyEmailForm } from "@/features/auth/verify-email-form";
 
 export default function Page() {
   return (
-    <AuthenticatedProvider>
+    <AuthenticatedLayout>
       <VerifyEmailPageInner />
-    </AuthenticatedProvider>
+    </AuthenticatedLayout>
   );
 }
 

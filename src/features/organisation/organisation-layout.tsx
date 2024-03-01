@@ -43,23 +43,21 @@ function NavLinks() {
 export function OrganisationLayout({ children }: { children: ReactNode }) {
   // TODO prevent the cascade of providers - make the user & org request parallel
   return (
-    <AuthenticatedProvider>
-      <OrganisationProvider>
-        <header className="flex flex-col">
-          <div className="border-b">
-            <div className="flex h-16 items-center px-4">
-              <OrganisationSelector />
-              <nav className="mx-6 space-x-6 flex items-center">
-                <NavLinks />
-              </nav>
-              <div className="ml-auto flex items-center">
-                <UserDropdown />
-              </div>
+    <OrganisationProvider>
+      <header className="flex flex-col">
+        <div className="border-b">
+          <div className="flex h-16 items-center px-4">
+            <OrganisationSelector />
+            <nav className="mx-6 space-x-6 flex items-center">
+              <NavLinks />
+            </nav>
+            <div className="ml-auto flex items-center">
+              <UserDropdown />
             </div>
           </div>
-        </header>
-        <div>{children}</div>
-      </OrganisationProvider>
-    </AuthenticatedProvider>
+        </div>
+      </header>
+      <div>{children}</div>
+    </OrganisationProvider>
   );
 }

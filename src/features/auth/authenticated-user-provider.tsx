@@ -14,7 +14,7 @@ type AuthenticatedUserContext = {
   user: AuthUser;
 };
 
-const authenticatedAuthContext = createContext<AuthenticatedUserContext>(
+export const authenticatedAuthContext = createContext<AuthenticatedUserContext>(
   {} as AuthenticatedUserContext
 );
 const authContext = createContext<AuthenticationContext>({} as AuthenticationContext);
@@ -41,7 +41,7 @@ export const AuthenticatedProvider = ({ children }: { children: ReactNode }) => 
   );
 };
 
-function VerifiedEmailGuard({ children }: { children: ReactNode }) {
+export function VerifiedEmailGuard({ children }: { children: ReactNode }) {
   const { user } = useAuthenticatedUser();
   const router = useRouter();
   const isVerifiedPage = router.pathname === VERIFY_EMAIL_URL;

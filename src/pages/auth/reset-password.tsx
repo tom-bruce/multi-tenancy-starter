@@ -1,8 +1,17 @@
+import { DefaultLayout } from "@/features/auth/default-layout";
 import { ResetPasswordWithTokenForm } from "@/features/auth/reset-password-with-token-form";
 import { useRouter } from "next/router";
 import { z } from "zod";
 
 export default function ResetPasswordPage() {
+  return (
+    <DefaultLayout>
+      <ResetPasswordPageInner />
+    </DefaultLayout>
+  );
+}
+
+function ResetPasswordPageInner() {
   const router = useRouter();
   const parsedQueryParams = z.object({ token: z.string() }).safeParse(router.query);
   if (!parsedQueryParams.success) {

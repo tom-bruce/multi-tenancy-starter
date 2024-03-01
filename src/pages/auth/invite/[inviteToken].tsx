@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { AuthenticatedProvider } from "@/features/auth/authenticated-user-provider";
+import { AuthenticatedLayout } from "@/features/auth/authenticated-layout";
 import { trpc } from "@/lib/trpc/next-client";
 import { useRouter } from "next/router";
 
@@ -17,9 +17,9 @@ function useInviteToken() {
 
 export default function AcceptInviteToken() {
   return (
-    <AuthenticatedProvider>
+    <AuthenticatedLayout>
       <AcceptInviteTokenInner />
-    </AuthenticatedProvider>
+    </AuthenticatedLayout>
   );
 }
 export function AcceptInviteTokenInner() {
