@@ -37,6 +37,7 @@ export function getBaseUrl() {
   if (typeof window !== "undefined")
     // browser should use relative path
     return "";
+  if (process.env.CUSTOM_URL) return `https://${process.env.CUSTOM_URL}`;
   if (process.env.VERCEL_URL)
     // reference for vercel.com
     return `https://${process.env.VERCEL_URL}`;
