@@ -1,19 +1,10 @@
 import { ReactNode } from "react";
-import { AuthenticatedProvider } from "../auth/authenticated-user-provider";
 import { OrganisationProvider } from "./organisation-provider";
 import { OrganisationSelector } from "./organisation-selector";
 import { UserDropdown } from "../user/user-dropdown";
 import Link from "next/link";
 import { useOrganisationSlug } from "./use-organisation-slug";
-
-const ORG_RESOURCES = {
-  overview: "/",
-  dashboard: "/dashboard",
-  settings: "/settings",
-};
-function orgLink(slug: string, resource: keyof typeof ORG_RESOURCES) {
-  return `/app/${slug}${ORG_RESOURCES[resource]}`;
-}
+import { orgLink } from "./org-links";
 
 function NavLinks() {
   const orgSlug = useOrganisationSlug();

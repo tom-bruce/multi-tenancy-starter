@@ -13,6 +13,7 @@ import {
 import { useAuthenticatedUser } from "../auth/authenticated-user-provider";
 import { useSignOut } from "../auth/use-sign-out";
 import Link from "next/link";
+import { USER_PROFILE_URL } from "./config";
 
 export function UserDropdown() {
   const { user } = useAuthenticatedUser();
@@ -36,18 +37,20 @@ export function UserDropdown() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            Profile
-            <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+          <DropdownMenuItem asChild>
+            <Link href={USER_PROFILE_URL}>
+              Profile
+              <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+            </Link>
           </DropdownMenuItem>
           {/* <DropdownMenuItem>
             Billing
             <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
           </DropdownMenuItem> */}
-          <DropdownMenuItem>
+          {/* <DropdownMenuItem>
             Settings
             <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
           <DropdownMenuItem asChild>
             <Link href="/new">New Organisation</Link>
           </DropdownMenuItem>

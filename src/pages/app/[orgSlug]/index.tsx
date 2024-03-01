@@ -3,7 +3,6 @@ import { OrganisationInviteForm } from "@/features/organisation/organisation-inv
 import { OrganisationInviteList } from "@/features/organisation/organisation-invite-list";
 import { OrganisationLayout } from "@/features/organisation/organisation-layout";
 import { useOrganisation } from "@/features/organisation/organisation-provider";
-import { OrganisationSelector } from "@/features/organisation/organisation-selector";
 import { Protect } from "@/features/organisation/protect";
 import { Suspense } from "react";
 
@@ -21,7 +20,6 @@ function PageInner() {
     <div>
       <h1>{org.name} Home Page</h1>
       <pre>{JSON.stringify(org, null, 2)}</pre>
-      <OrganisationSelector />
 
       <MembersList />
       <Protect role="admin" fallback={<p>Only admins can manage organisation memberships.</p>}>

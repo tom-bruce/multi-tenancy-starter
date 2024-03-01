@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
-export function Redirect({ url }: { url: URL }) {
+export function Redirect({ url }: { url: URL | string }) {
   const router = useRouter();
   useEffect(() => {
     router.push(url);
