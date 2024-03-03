@@ -13,12 +13,12 @@ import { generateId } from "@/lib/id";
 import { TRPCError } from "@trpc/server";
 import { assertNever, getBaseUrl } from "@/lib/utils";
 import {
+  RESET_PASSWORD_URL,
   RESET_TOKEN_ERRORS,
   SIGN_IN_ERRORS,
   SIGN_UP_ERRORS,
   TRIGGER_RESET_ERRORS,
   VERIFY_EMAIL_ERRORS,
-  VERIFY_RESET_TOKEN_URL,
 } from "@/features/auth/config";
 import { sendMail } from "@/lib/email/send-mail";
 import PasswordReset from "@/lib/email/templates/password-reset";
@@ -181,8 +181,7 @@ export const userRouter = router({
       // Create a reset token
       const resetToken = await User.createResetPasswordToken(maybeUser.id);
       const baseUrl = getBaseUrl();
-      const resetUrl = new URL(VERIFY_RESET_TOKEN_URL, baseUrl);
-      resetUrl.searchParams.append("token", resetToken);
+      const resetUrl = new URL(`${RESET_PASSWORD_URL}/${resetToken}`, baseUrl);
 
       // Send the reset email
       await sendMail({

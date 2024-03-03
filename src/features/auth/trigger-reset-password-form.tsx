@@ -38,12 +38,13 @@ export function TriggerResetPasswordForm() {
           name="email"
           render={({ field }) => (
             <FormItem className="flex-grow">
-              <FormLabel>Email</FormLabel>
+              <FormLabel className="sr-only">Email</FormLabel>
               <FormControl>
                 <div className="flex gap-4">
                   <Input
                     disabled={resetPasswordMutation.isPending || resetPasswordMutation.isSuccess}
                     type="email"
+                    placeholder="your.email@example.com"
                     {...field}
                   />
                   <Button

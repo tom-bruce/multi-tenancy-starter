@@ -6,7 +6,7 @@ export const SIGN_UP_ERRORS = {
   EMAIL_IN_USE: "Email already in use",
 };
 
-export const VERIFY_RESET_TOKEN_URL = "/auth/reset-password";
+export const RESET_PASSWORD_URL = "/auth/reset-password";
 
 export const VERIFY_EMAIL_URL = "/auth/verify-email";
 
