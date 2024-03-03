@@ -13,7 +13,7 @@ export default function ResetPasswordPage() {
 
 function ResetPasswordPageInner() {
   const router = useRouter();
-  const parsedQueryParams = z.object({ token: z.string() }).safeParse(router.query);
+  const parsedQueryParams = z.object({ resetToken: z.string() }).safeParse(router.query);
   if (!parsedQueryParams.success) {
     return (
       <div className="h-screen flex justify-center items-center">
@@ -32,7 +32,7 @@ function ResetPasswordPageInner() {
           Enter a new password. You will be signed out of all other devices once your password is
           changed.
         </p>
-        <ResetPasswordWithTokenForm token={parsedQueryParams.data.token} />
+        <ResetPasswordWithTokenForm token={parsedQueryParams.data.resetToken} />
       </div>
     </main>
   );
