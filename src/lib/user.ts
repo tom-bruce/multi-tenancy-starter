@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, gt } from "drizzle-orm";
 import { db, isIntegrityViolation } from "./db";
 import { users } from "./db/schema/users";
 import { generateId } from "lucia";
@@ -98,7 +98,11 @@ export async function changePasswordWithResetToken({
 
 export async function activeSessions({ userId }: { userId: string }) {
   // This would become more useful if we included information like last used, user agent, IP address etc
-  return db.select({ id: sessions.id }).from(sessions).where(eq(sessions.userId, userId)).execute();
+  return db
+    .select({ id: sessions.id })
+    .from(sessions)
+    .where(and(eq(sessions.userId, userId), gt(sessions.expiresAt, new Date())))
+    .execute();
 }
 
 export async function createVerificationCode({ userId, email }: { userId: string; email: string }) {

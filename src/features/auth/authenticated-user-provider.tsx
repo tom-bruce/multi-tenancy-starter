@@ -5,13 +5,15 @@ import { SIGN_IN_URL, VERIFY_EMAIL_URL } from "./config";
 import { PageLoader } from "@/components/page-loader";
 
 type AuthUser = NonNullable<RouterOutput["user"]["me"]["user"]>;
-
+type AuthSession = NonNullable<RouterOutput["user"]["me"]["session"]>;
 type AuthenticationContext = {
   user: AuthUser | null;
+  session: AuthSession | null;
 };
 
 type AuthenticatedUserContext = {
   user: AuthUser;
+  session: AuthSession;
 };
 
 export const authenticatedAuthContext = createContext<AuthenticatedUserContext>(
@@ -34,8 +36,11 @@ export const AuthenticatedProvider = ({ children }: { children: ReactNode }) => 
     // TODO this should probably show either an error screen or redirect to login. The purpose of this provider is to allow for the more strictly typed useAuthenticatedUser hook
     return null;
   }
+  if (auth.session === null) {
+    return null;
+  }
   return (
-    <authenticatedAuthContext.Provider value={{ user: auth.user }}>
+    <authenticatedAuthContext.Provider value={{ user: auth.user, session: auth.session }}>
       <VerifiedEmailGuard>{children}</VerifiedEmailGuard>
     </authenticatedAuthContext.Provider>
   );

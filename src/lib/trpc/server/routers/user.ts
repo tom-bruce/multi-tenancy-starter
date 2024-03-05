@@ -27,7 +27,7 @@ import { assertRateLimited } from "@/lib/assert-rate-limited";
 
 export const userRouter = router({
   me: publicProcedure.query(async (opts) => {
-    return { user: opts.ctx.user ?? null };
+    return { user: opts.ctx.user ?? null, session: opts.ctx.session ?? null };
   }),
   sendEmailVerificationCode: protectedProcedure
     .meta({ rateLimitType: "email", skipEmailVerificationCheck: true })
@@ -226,4 +226,7 @@ export const userRouter = router({
       ctx.res.appendHeader("Set-Cookie", sessionCookie.serialize());
       return;
     }),
+  activeSessions: protectedProcedure.query(({ ctx }) => {
+    return User.activeSessions({ userId: ctx.user.id });
+  }),
 });
