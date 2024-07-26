@@ -6,7 +6,7 @@ import { timestamp } from "drizzle-orm/pg-core";
 export const emailVerificationCodes = pgTable("email_verification_codes", {
   id: varchar("id")
     .primaryKey()
-    .$defaultFn(() => generateId("invite")),
+    .$defaultFn(() => generateId("verification")),
   userId: varchar("user_id")
     .notNull()
     .unique()

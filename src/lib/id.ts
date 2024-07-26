@@ -5,6 +5,7 @@ const RESOURCES = {
   user: "user",
   organisation: "org",
   member: "mem",
+  verification: "ver",
   invite: "inv",
 };
 
